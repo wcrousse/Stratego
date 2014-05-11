@@ -9,11 +9,15 @@ package stratego2.model;
 
 
 public class Move {
-    private final int startRow;
-    private final int startColumn;
-    private final int destinationRow;
-    private final int destinationColumn;
+    private int startRow;
+    private int startColumn;
+    private int destinationRow;
+    private int destinationColumn;
 
+    /**
+     * creates a Move object without assigned coordinates
+     */
+    public Move() {}
     /**
      * creates Move data structure
      * @param startRow the row index of the piece to be moved
@@ -44,6 +48,22 @@ public class Move {
 
     public int getDestinationColumn() {
         return destinationColumn;
+    }
+
+    public void setStartRow(int startRow) {
+        this.startRow = startRow;
+    }
+
+    public void setStartColumn(int startColumn) {
+        this.startColumn = startColumn;
+    }
+
+    public void setDestinationRow(int destinationRow) {
+        this.destinationRow = destinationRow;
+    }
+
+    public void setDestinationColumn(int destinationColumn) {
+        this.destinationColumn = destinationColumn;
     }
     
     

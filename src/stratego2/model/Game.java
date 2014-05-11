@@ -3,6 +3,7 @@ package stratego2.model;
 import java.util.ArrayList;
 import java.util.List;
 import stratego2.view.Display;
+import stratego2.view.gui.GameFrame;
 
 /**
  *
@@ -44,6 +45,7 @@ public class Game {
      */
     public void play() {
         setupBoard();
+        players[1].setDisplay(new GameFrame());
         toMove = RED;
         do {
             Move move = players[toMove].getMove(board);
@@ -52,6 +54,7 @@ public class Game {
                 move = players[toMove].getMove(board);
             }
             processMove(move);
+            for (Player p: players) p.displayBoard(board);
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
     }

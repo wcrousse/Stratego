@@ -6,6 +6,7 @@ import java.util.List;
 import stratego2.model.Piece;
 import stratego2.view.Display;
 import stratego2.view.View;
+import stratego2.view.gui.GameFrame;
 
 /**
  *
@@ -43,6 +44,7 @@ public class Player {
      */
     public Move getMove(Board board) {
         Move move = null;
+        view.displayBoard(board);
         //if start square does not contain a piece
         do {
             move = view.getMove(board);                        
@@ -81,11 +83,19 @@ public class Player {
         return color;
     }
     
-    void reportIllegalMove() {
+    public void reportIllegalMove() {
         view.reportIllegalMove();
     }
 
-    void revealSquare(Square square) {
+    public void revealSquare(Square square) {
         view.revealSquare(square.getOccupier());
+    }
+
+    public void displayBoard(Board board) {
+        view.displayBoard(board);
+    }
+
+    void setDisplay(GameFrame gameFrame) {
+        this.view = gameFrame;
     }
 }
