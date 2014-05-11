@@ -29,6 +29,8 @@ public class GameFrame extends JFrame implements Display {
 
     GameSquare[][] squarePnls;
     JPanel board;
+    /**The color of pieces controlled by the owner of this view.**/
+    stratego2.model.Color color;
     Move move;
     /**
      * true if the player who owns this view is currently to move. Check this in
@@ -51,12 +53,16 @@ public class GameFrame extends JFrame implements Display {
     private boolean isMoveReady;
     private BoardListener boardListener;
     private boolean isInitailized;
+    
 
     /**
      * creates a GameFrame. Most of the initialization happens in the initComponents
      * method.
+     * @param color the color of the pieces controlled by the owner of this 
+     * display.
      */
-    public GameFrame() {
+    public GameFrame(stratego2.model.Color color) {
+        this.color = color;
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1200, 1200);
         setLocationRelativeTo(null);
@@ -70,7 +76,7 @@ public class GameFrame extends JFrame implements Display {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new GameFrame();
+        JFrame frame = new GameFrame(stratego2.model.Color.BLUE);
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setSize(1200, 1200);
         frame.pack();
@@ -159,6 +165,8 @@ public class GameFrame extends JFrame implements Display {
                     squareView.setBackground(Color.lightGray);
 
                 } else if (squareModel.isOccupied()) {
+                    Piece piece = squareModel.getOccupier();
+                    if (piece.getColor() == color) squareView.setColor(this.color);
                     squareView.setPiece(squareModel.getOccupier());
                 }
             }

@@ -37,6 +37,8 @@ public class GameSquare extends javax.swing.JPanel {
      *
      */
     JLabel lblPiece;
+    
+    Color color;
 
     /**
      * Creates new form GameSquare
@@ -90,7 +92,9 @@ public class GameSquare extends javax.swing.JPanel {
      * @param occupier a model of the piece to be placed.
      */
     void setPiece(Piece occupier) {
-        lblPiece.setText("<html><center>"+occupier.getValue() + "<br>----</html>");
+        String labelText = 
+                (occupier.getColor() == color)? occupier.getValue() + "": "----";
+        lblPiece.setText("<html><center>"+ labelText + "<br>----</html>");
         lblPiece.setSize(40, 40);
         lblPiece.setFont(new Font("Georgia", Font.BOLD, 24));
         lblPiece.setBorder(BorderFactory.createLineBorder(java.awt.Color.black));
@@ -103,7 +107,11 @@ public class GameSquare extends javax.swing.JPanel {
 
         }
         lblPiece.setVisible(true);
-        revalidate();
-        repaint();
+//        revalidate();
+//        repaint();
+    }
+    
+    public void setColor(Color color) {
+        this.color = color;
     }
 }
