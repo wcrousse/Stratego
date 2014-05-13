@@ -5,11 +5,12 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import stratego2.model.Board;
@@ -22,14 +23,16 @@ import stratego2.view.Display;
 /**
  *
  * @author roussew
- * 
+ *
  * This is the root container of the gui.
  */
 public class GameFrame extends JFrame implements Display {
 
     GameSquare[][] squarePnls;
     JPanel board;
-    /**The color of pieces controlled by the owner of this view.**/
+    /**
+     * The color of pieces controlled by the owner of this view.*
+     */
     stratego2.model.Color color;
     Move move;
     /**
@@ -44,21 +47,22 @@ public class GameFrame extends JFrame implements Display {
      * clicked
      */
     private boolean isPieceSeclected;
-    
+
     /**
-     * true if a Move object has been fully initialized and is ready to be returned
-     * should be set to true only by the MouseClicked listener once a move has
-     * been completed. Should be set to false once a move has been sent; 
+     * true if a Move object has been fully initialized and is ready to be
+     * returned should be set to true only by the MouseClicked listener once a
+     * move has been completed. Should be set to false once a move has been
+     * sent;
      */
     private boolean isMoveReady;
     private BoardListener boardListener;
     private boolean isInitailized;
-    
 
     /**
-     * creates a GameFrame. Most of the initialization happens in the initComponents
-     * method.
-     * @param color the color of the pieces controlled by the owner of this 
+     * creates a GameFrame. Most of the initialization happens in the
+     * initComponents method.
+     *
+     * @param color the color of the pieces controlled by the owner of this
      * display.
      */
     public GameFrame(stratego2.model.Color color) {
@@ -72,7 +76,7 @@ public class GameFrame extends JFrame implements Display {
         java.awt.EventQueue.invokeLater(() -> {
             initComponents();
         });
-       
+
     }
 
     public static void main(String[] args) {
@@ -121,9 +125,8 @@ public class GameFrame extends JFrame implements Display {
         isTurn = true;
         Thread moveGetter = new Thread() {
             @Override
-            public void run() {    
+            public void run() {
                 waitForMove();
-                
             }
         };
         moveGetter.start();
@@ -132,10 +135,10 @@ public class GameFrame extends JFrame implements Display {
         } catch (InterruptedException ex) {
             Logger.getLogger(GameFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        System.out.println("returning move " + move);
         return move;
     }
-    
+
     /**
      * to be called from the getMove() method. Waits until a Move has been fully
      * initialized and is ready to be sent back to the Player object.
@@ -147,14 +150,15 @@ public class GameFrame extends JFrame implements Display {
             Logger.getLogger(GameFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
     @Override
     @SuppressWarnings("empty-statement")
     public void displayBoard(Board board) {
         //for testing only. replace with more sophisticated method.
         System.out.println("done initailizing? " + isInitailized);
-        while (!isInitailized) {          
+        while (!isInitailized) {
         }
-        
+
         System.out.println("Initialization complete");
         for (int i = 0; i < Game.NUM_ROWS; i++) {
             for (int j = 0; j < Game.NUM_COLUMNS; j++) {
@@ -166,8 +170,12 @@ public class GameFrame extends JFrame implements Display {
 
                 } else if (squareModel.isOccupied()) {
                     Piece piece = squareModel.getOccupier();
-                    if (piece.getColor() == color) squareView.setColor(this.color);
+                    if (piece.getColor() == color) {
+                        squareView.setColor(this.color);
+                    }
                     squareView.setPiece(squareModel.getOccupier());
+                } else {
+                    squareView.lblPiece.setVisible(false);
                 }
             }
         }
@@ -177,36 +185,82 @@ public class GameFrame extends JFrame implements Display {
 
     @Override
     public void reportIllegalMove() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("illegal move pick again");
     }
 
     @Override
     public void revealSquare(Piece piece) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (piece.getColor() != this.color) {
+            int row = piece.getRow();
+            int column = piece.getColumn();
+            int value = piece.getValue();
+            GameSquare gs = squarePnls[row][column];
+            new Thread() {
+                @Override
+                public void run() {
+                    String originalText = gs.lblPiece.getText();
+                    for (int i = 0; i < 5; i++) {
+                        try {
+                            gs.lblPiece.setText("<html><center>" + value + 
+                                    "<br>----</html>");
+                            validate();
+                            repaint();
+                            TimeUnit.MILLISECONDS.sleep(200);
+                            System.out.println("showit " + value);
+                            gs.lblPiece.setText("<html><center>-----" + 
+                                    "<br>----</html>");
+                            validate();
+                            repaint();
+                            TimeUnit.MILLISECONDS.sleep(200);
+                            System.out.println(originalText);
+
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(
+                                    GameFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            }.start();
+        }
     }
+
     /**
      * A listener for mouse clicked events. To be used with the GameSquares.
      */
     class BoardListener extends MouseAdapter {
-         @Override
+
+        @Override
         public void mouseClicked(MouseEvent e) {
             GameSquare gs = (GameSquare) e.getSource();
             System.out.println("mouse clicked in square"
                     + gs.column + ", " + gs.row);
-            if (isTurn) {
-                if (!isPieceSeclected) {
-                    move = new Move();
-                    move.setStartRow(gs.row);
-                    move.setStartColumn(gs.column);
-                    
-                }else synchronized(this) {
+
+            generateMove(gs);
+
+        }
+    }
+
+    private void generateMove(GameSquare gs) {
+        if (isTurn) {
+            if (!isPieceSeclected) {
+                move = new Move();
+                move.setStartRow(gs.row);
+                move.setStartColumn(gs.column);
+                isPieceSeclected = true;
+                System.out.println("move started " + move.getStartRow()
+                        + move.getStartColumn());
+
+            } else {
+                synchronized (this) {
                     move.setDestinationRow(gs.row);
                     move.setDestinationColumn(gs.column);
                     isTurn = false;
-                    notifyAll();
+                    isPieceSeclected = false;
+                    System.out.println("move finished " + move.getDestinationColumn()
+                            + move.getDestinationRow());
+                    this.notifyAll();
                 }
             }
-
         }
     }
 }

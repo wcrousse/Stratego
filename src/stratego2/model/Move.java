@@ -65,6 +65,11 @@ public class Move {
     public void setDestinationColumn(int destinationColumn) {
         this.destinationColumn = destinationColumn;
     }
+
+    @Override
+    public String toString() {
+        return "Move{" + "startRow=" + startRow + ", startColumn=" + startColumn + ", destinationRow=" + destinationRow + ", destinationColumn=" + destinationColumn + '}';
+    }
     
     
 }

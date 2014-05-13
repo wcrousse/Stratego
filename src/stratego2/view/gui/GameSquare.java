@@ -1,9 +1,11 @@
-
 package stratego2.view.gui;
 
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import stratego2.model.Color;
@@ -37,7 +39,7 @@ public class GameSquare extends javax.swing.JPanel {
      *
      */
     JLabel lblPiece;
-    
+
     Color color;
 
     /**
@@ -67,14 +69,14 @@ public class GameSquare extends javax.swing.JPanel {
 
     /**
      * This method is called from within the constructor to initialize the form.
-     */                         
+     */
     private void initComponents() {
         setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         setPreferredSize(new java.awt.Dimension(50, 50));
         setRequestFocusEnabled(false);
-        setSize(new java.awt.Dimension(50, 50));  
+        setSize(new java.awt.Dimension(50, 50));
         this.setLayout(new GridBagLayout());
-    }                  
+    }
 
     /**
      * sets color based on whether or not the square is dead.
@@ -89,12 +91,13 @@ public class GameSquare extends javax.swing.JPanel {
 
     /**
      * places an icon representing a game piece on the square.
+     *
      * @param occupier a model of the piece to be placed.
      */
     void setPiece(Piece occupier) {
-        String labelText = 
-                (occupier.getColor() == color)? occupier.getValue() + "": "----";
-        lblPiece.setText("<html><center>"+ labelText + "<br>----</html>");
+        String labelText
+                = (occupier.getColor() == color) ? occupier.getValue() + "" : "----";
+        lblPiece.setText("<html><center>" + labelText + "<br>----</html>");
         lblPiece.setSize(40, 40);
         lblPiece.setFont(new Font("Georgia", Font.BOLD, 24));
         lblPiece.setBorder(BorderFactory.createLineBorder(java.awt.Color.black));
@@ -110,7 +113,31 @@ public class GameSquare extends javax.swing.JPanel {
 //        revalidate();
 //        repaint();
     }
-    
+
+    public void flashValue(int value) {
+
+        for (int i = 0; i < 5; i++) {
+            try {
+                String originalText = lblPiece.getText();
+                lblPiece = new JLabel("<html><center>" + value + "<br>----</html>");
+                lblPiece.setVisible(true);
+                add(lblPiece);
+                validate();
+                repaint();
+                TimeUnit.MILLISECONDS.sleep(100);
+                lblPiece = new JLabel(originalText);
+                add(lblPiece);
+                TimeUnit.MILLISECONDS.sleep(100);
+                validate();
+                repaint();
+                
+            } catch (InterruptedException ex) {
+                Logger.getLogger(GameSquare.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+    }
+
     public void setColor(Color color) {
         this.color = color;
     }

@@ -107,7 +107,6 @@ public class Game {
         if (!isFlagCaptured) {
             List<Piece> army = (toMove != BLUE) ? blueArmy : redArmy;
             for (Piece piece : army) {
-                System.out.println(piece);
                 if (hasMove(piece)) {
                     System.out.println(true);
                     return false;
@@ -136,7 +135,6 @@ public class Game {
         } else if (isLegal(piece, piece.getRow(), piece.getColumn() + 1)) {
             result = true;
         }
-        System.out.println(piece + ", " + result);
         return result;
     }
 
@@ -193,7 +191,7 @@ public class Game {
                 || row < piece.getRow() - 1) {
             result = false;
         }
-        printMove(result, piece, row, column);
+       // printMove(result, piece, row, column);
 
         return result;
     }
@@ -290,6 +288,8 @@ public class Game {
                 cleanUp(square, winner, loser);
             }
         }
+        //square object is just a copy. Must reaquire the square.
+        square = board.getSquare(defender.getRow(), defender.getColumn());
         for(Player player: players) player.revealSquare(square);
     }
 
