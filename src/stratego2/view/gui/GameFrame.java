@@ -15,6 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -111,6 +112,10 @@ public class GameFrame extends JFrame implements Display {
      * initializes the GUI components adds everything to the GameFrame.
      */
     private void initComponents() {
+        JComponent contentpane = new JPanel(new BorderLayout());
+        contentpane.setOpaque(true);
+        this.setContentPane(contentpane);
+        
         Dimension boardSize = new Dimension(500, 500);
         board = new JPanel();
         board.setPreferredSize(boardSize);
@@ -128,7 +133,7 @@ public class GameFrame extends JFrame implements Display {
                 gs.addMouseListener(boardListener);
             }
         }
-        add(board);
+        contentpane.add(board, BorderLayout.CENTER);
         isInitailized = true;
         System.out.println("done initializing");
     }
@@ -144,7 +149,7 @@ public class GameFrame extends JFrame implements Display {
     @Override
     public int[][] getSetup() {
         SetupPanel setupPnl = new SetupPanel();
-        add(setupPnl);
+        add(setupPnl, BorderLayout.EAST);
         setupPnl.setVisible(true);
         pack();
         waitforSetup();
@@ -306,8 +311,6 @@ public class GameFrame extends JFrame implements Display {
 
     class SetupPanel extends JPanel implements ActionListener {
 
-        static final String path
-                = "/Users/roussew/NetBeansProjects/Stratego2/StartPossitions";
         ButtonGroup group;
 
         SetupPanel() {
@@ -355,7 +358,7 @@ public class GameFrame extends JFrame implements Display {
                     fileName = null;
             }
 
-            int[][] setup = parser.readPositionFile(path + fileName);
+            int[][] setup = parser.readPositionFile(fileName);
             setSetup(setup);
         }
     }
