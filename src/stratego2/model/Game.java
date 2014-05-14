@@ -1,9 +1,9 @@
 package stratego2.model;
 
+import stratego2.model.Player.HumanPlayer;
+import stratego2.model.Player.Player;
 import java.util.ArrayList;
 import java.util.List;
-import stratego2.view.Display;
-import stratego2.view.gui.GameFrame;
 
 /**
  *
@@ -102,7 +102,7 @@ public class Game {
 
     }
 
-    private void getMove(Player player) {
+    private void getMove(HumanPlayer player) {
     }
 
     /**
@@ -328,7 +328,7 @@ public class Game {
      * @param p2
      */
     private void cleanUpTie(Square square, Piece p1, Piece p2) {
-        square.setOccupier(null);
+        board.clearSquare(p1.getRow(), p1.getColumn());
         if (p1.getColor() == Color.BLUE) {
             blueCaptured.add(p1);
             redCaptured.add(p2);

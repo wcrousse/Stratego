@@ -1,30 +1,36 @@
-package stratego2.model;
+package stratego2.model.Player;
 
+import stratego2.model.Player.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import stratego2.model.Board;
+import stratego2.model.Color;
+import stratego2.model.ControllerInterface;
+import stratego2.model.Move;
 import stratego2.model.Piece;
+import stratego2.model.Rank;
+import stratego2.model.Square;
 import stratego2.view.Display;
-import stratego2.view.View;
 import stratego2.view.gui.GameFrame;
 
 /**
  *
  * @author roussew
  */
-public class Player {
+public class HumanPlayer implements Player{
 
     private List<Piece> army;
     private ControllerInterface controller;
     private Color color;
     private Display view;
 
-    public Player(Piece[] army) {
+    public HumanPlayer(Piece[] army) {
         this.army = new ArrayList<>();
         this.army.addAll(Arrays.asList(army));
     }
 
-    public Player(Color color, Display view) {
+    public HumanPlayer(Color color, Display view) {
         this.color = color;
         this.view = view;
         army = new ArrayList<>();
@@ -93,7 +99,7 @@ public class Player {
 
     public void revealSquare(Square square) {
         System.out.println("reveal the squares" + square.getOccupier());
-        if (square.getOccupier().getColor() != color) {
+        if (square.isOccupied() && square.getOccupier().getColor() != color) {
             view.revealSquare(square.getOccupier());
         }
     }

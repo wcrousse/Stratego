@@ -96,6 +96,11 @@ public class Board implements Iterable<Square>{
         square.setOccupier(piece);
         return true;
     }
+    
+    public boolean clearSquare(int row, int column) {
+        squares[row][column].setOccupier(null);
+        return true;
+    }
 
     @Override
     public Iterator<Square> iterator() {
