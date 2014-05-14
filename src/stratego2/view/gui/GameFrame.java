@@ -1,23 +1,32 @@
 package stratego2.view.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.border.EtchedBorder;
 import stratego2.model.Board;
+import stratego2.model.FileParser;
 import stratego2.model.Game;
 import stratego2.model.Move;
 import stratego2.model.Piece;
 import stratego2.model.Square;
+import stratego2.model.StartPossitions;
 import stratego2.view.Display;
 
 /**
@@ -29,6 +38,10 @@ import stratego2.view.Display;
 public class GameFrame extends JFrame implements Display {
 
     GameSquare[][] squarePnls;
+    /**
+     * an integer matrix representation of a starting position.
+     */
+    private int[][] setup;
     JPanel board;
     /**
      * The color of pieces controlled by the owner of this view.*
@@ -55,6 +68,12 @@ public class GameFrame extends JFrame implements Display {
      * sent;
      */
     private boolean isMoveReady;
+
+    /**
+     * true if the player has finished setting up his/her pieces.
+     */
+    private boolean isSettupReady;
+
     private BoardListener boardListener;
     private boolean isInitailized;
 
@@ -92,7 +111,7 @@ public class GameFrame extends JFrame implements Display {
      * initializes the GUI components adds everything to the GameFrame.
      */
     private void initComponents() {
-        Dimension boardSize = new Dimension(1000, 1000);
+        Dimension boardSize = new Dimension(500, 500);
         board = new JPanel();
         board.setPreferredSize(boardSize);
         board.setLayout(new GridLayout(10, 10));
@@ -114,9 +133,25 @@ public class GameFrame extends JFrame implements Display {
         System.out.println("done initializing");
     }
 
+    private synchronized void waitforSetup() {
+        try {
+            this.wait();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(GameFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     @Override
     public int[][] getSetup() {
-        return null;
+        SetupPanel setupPnl = new SetupPanel();
+        add(setupPnl);
+        setupPnl.setVisible(true);
+        pack();
+        waitforSetup();
+        remove(setupPnl);
+        validate();
+        repaint();
+        return setup;
     }
 
     @Override
@@ -201,14 +236,14 @@ public class GameFrame extends JFrame implements Display {
                     String originalText = gs.lblPiece.getText();
                     for (int i = 0; i < 5; i++) {
                         try {
-                            gs.lblPiece.setText("<html><center>" + value + 
-                                    "<br>----</html>");
+                            gs.lblPiece.setText("<html><center>" + value
+                                    + "<br>----</html>");
                             validate();
                             repaint();
                             TimeUnit.MILLISECONDS.sleep(200);
                             System.out.println("showit " + value);
-                            gs.lblPiece.setText("<html><center>-----" + 
-                                    "<br>----</html>");
+                            gs.lblPiece.setText("<html><center>-----"
+                                    + "<br>----</html>");
                             validate();
                             repaint();
                             TimeUnit.MILLISECONDS.sleep(200);
@@ -261,6 +296,67 @@ public class GameFrame extends JFrame implements Display {
                     this.notifyAll();
                 }
             }
+        }
+    }
+
+    private synchronized void setSetup(int[][] setup) {
+        this.setup = setup;
+        this.notify();
+    }
+
+    class SetupPanel extends JPanel implements ActionListener {
+
+        static final String path
+                = "/Users/roussew/NetBeansProjects/Stratego2/StartPossitions";
+        ButtonGroup group;
+
+        SetupPanel() {
+            super(new BorderLayout());
+            group = new ButtonGroup();
+            JPanel radioPanel = new JPanel(new GridLayout(0, 1));
+            for (int i = 0; i < StartPossitions.numStartPossitions; i++) {
+                JRadioButton rbutton = new JRadioButton(i + "");
+                rbutton.setActionCommand(i + "");
+                group.add(rbutton);
+                radioPanel.add(rbutton);
+            }
+            add(radioPanel, BorderLayout.LINE_START);
+            radioPanel.setVisible(true);
+            setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            JButton btnSubmit = new JButton("submit");
+            btnSubmit.addActionListener(this);
+            add(btnSubmit, BorderLayout.LINE_END);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FileParser parser = new FileParser();
+            String fileName;
+            ButtonModel btnmodel = group.getSelection();
+            int setUpNum = Integer.parseInt(btnmodel.getActionCommand());
+            switch (setUpNum) {
+                case 0:
+                    fileName = StartPossitions.FLAG_LEFT1.fileName();
+                    break;
+                case 1:
+                    fileName = StartPossitions.FLAG_RIGHT1.fileName();
+                    break;
+                case 2:
+                    fileName = StartPossitions.FLAG_MIDDLE.fileName();
+                    break;
+                case 3:
+                    fileName = StartPossitions.FLAG_LEFT2.fileName();
+                    break;
+                case 4:
+                    fileName = StartPossitions.FLAG_RIGHT2.fileName();
+                    break;
+                default:
+                    //appease the compiler
+                    fileName = null;
+            }
+
+            int[][] setup = parser.readPositionFile(path + fileName);
+            setSetup(setup);
         }
     }
 }

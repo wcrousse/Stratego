@@ -12,6 +12,7 @@ public enum StartPossitions {
     FLAG_LEFT2 ("leftCorner2.txt");
     
     private final String fileName;
+    public static final int numStartPossitions = 5;
     
     StartPossitions(String fileName) {
         this.fileName = fileName;

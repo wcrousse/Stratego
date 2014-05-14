@@ -45,7 +45,7 @@ public class Game {
      */
     public void play() {
         setupBoard();
-        players[1].setDisplay(new GameFrame(players[1].getColor()));
+        //players[1].setDisplay(new GameFrame(players[1].getColor()));
         toMove = RED;
         do {
             Move move = players[toMove].getMove(board);
