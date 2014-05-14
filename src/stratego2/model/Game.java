@@ -73,9 +73,19 @@ public class Game {
         blueArmy = players[0].getSetup();
         redArmy = players[1].getSetup();
 
-        setPieces(blueArmy);
-        setPieces(redArmy);
+        new Thread() {
+            public void run() {
+                setPieces(blueArmy);
+            }
+        }.start();
+        
+        new Thread() {
+            public void run() {
+                setPieces(redArmy);
+            }
+        }.start();
     }
+
 
     /**
      * places the pieces on the board.

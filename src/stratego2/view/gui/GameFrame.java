@@ -86,16 +86,17 @@ public class GameFrame extends JFrame implements Display {
      * display.
      */
     public GameFrame(stratego2.model.Color color) {
+        
         this.color = color;
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1200, 1200);
+        setSize(600, 600);
         setLocationRelativeTo(null);
         setVisible(true);
         squarePnls = new GameSquare[Game.NUM_ROWS][Game.NUM_COLUMNS];
         boardListener = new BoardListener();
-        java.awt.EventQueue.invokeLater(() -> {
+        //java.awt.EventQueue.invokeLater(() -> {
             initComponents();
-        });
+        //});
 
     }
 

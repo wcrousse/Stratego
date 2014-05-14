@@ -18,8 +18,9 @@ public class Stratego2 {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        
         Player bluePlayer = new Player(Color.BLUE, new GameFrame(Color.BLUE));
-        Player redPlayer = new Player(Color.RED, new TextDisplay(Color.RED));
+        Player redPlayer = new Player(Color.RED, new GameFrame(Color.RED));
         Game game = new Game();
         game.setPlayers(bluePlayer, redPlayer);
         game.play();
