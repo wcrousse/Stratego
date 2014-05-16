@@ -1,11 +1,12 @@
 package stratego2.model;
 
-import stratego2.model.Player.HumanPlayer;
-import stratego2.model.Player.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import stratego2.model.Player.AI.GameState;
+import stratego2.model.Player.HumanPlayer;
+import stratego2.model.Player.Player;
 
 /**
  *
@@ -31,33 +32,42 @@ public class Game {
     /**
      * a data structure representing the current game layout
      */
-    private Board board;
+    private GameState state;
     private List<Piece> redArmy, blueArmy, redCaptured, blueCaptured;
     private boolean isFlagCaptured;
+    private final StrategoRules rules;
 
     public Game() {
         players = new Player[2];
-        board = new Board();
+        state = new GameState();
         redCaptured = new ArrayList<>();
         blueCaptured = new ArrayList<>();
+        rules = new StrategoRules();
     }
 
     /**
      * begins the game.
+     * @throws java.lang.Exception
      */
-    public void startGame() {
+    public void startGame() throws Exception {
         setupBoard();
         //players[1].setDisplay(new GameFrame(players[1].getColor()));
         toMove = RED;
         Color winner = play();
     }
-    protected Color play() {
+    protected Color play() throws Exception {
         do {
-            for (Player p: players) p.displayBoard(board);
-            Move move = players[toMove].getMove(board);
-            while (!isLegal(move)) {
-                players[toMove].reportIllegalMove();
-                move = players[toMove].getMove(board);
+            for (Player p: players) p.displayBoard(state);
+            Move move = players[toMove].getMove(state);
+            while (!rules.isLegal(state, move)) {               
+                try {
+                    players[toMove].reportIllegalMove();
+                } catch (Exception ex) {
+                    System.err.println("AAAAHHH!!!! AI has gone CRAZY!!!!" + 
+                            move.toString());
+                    throw ex;
+                }
+                move = players[toMove].getMove(state);
             }
             processMove(move);
             
@@ -98,7 +108,7 @@ public class Game {
         } catch (InterruptedException ex) {
             Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
         }
-        board = new Board(redArmy, blueArmy);
+        state = new GameState(Color.RED, redArmy, blueArmy);
     }
 
     /**
@@ -132,87 +142,87 @@ public class Game {
      */
     protected boolean hasMove(Piece piece) {
         boolean result = false;
-        if (isLegal(piece, piece.getRow() - 1, piece.getColumn())) {
+        if (rules.isLegal(state, piece, piece.getRow() - 1, piece.getColumn())) {
             result = true;
-        } else if (isLegal(piece, piece.getRow() + 1, piece.getColumn())) {
+        } else if (rules.isLegal(state, piece, piece.getRow() + 1, piece.getColumn())) {
             result = true;
-        } else if (isLegal(piece, piece.getRow(), piece.getColumn() - 1)) {
+        } else if (rules.isLegal(state, piece, piece.getRow(), piece.getColumn() - 1)) {
             result = true;
-        } else if (isLegal(piece, piece.getRow(), piece.getColumn() + 1)) {
+        } else if (rules.isLegal(state, piece, piece.getRow(), piece.getColumn() + 1)) {
             result = true;
         }
         return result;
     }
 
-    /**
-     * checks the legality of a proposed move. This is where the move rules are
-     * specified.
-     *
-     * @param piece the piece to be moved
-     * @param column the column index of the destination square
-     * @param row the row index of the destination square
-     * @return true if the move is legal, false otherwise.
-     */
-    protected boolean isLegal(Piece piece, int row, int column) {
-        boolean result = true;
-        if (row >= Game.NUM_ROWS
-                || column >= Game.NUM_COLUMNS
-                || row < 0
-                || column < 0) {
-            return false;
-        }
-        Square square = board.getSquare(row, column);
-        //check if destination square is active
-        if (!square.isActive()) {
-            result = false;
-            
-        //check that piece is of a moveable type    
-        }else if(piece.getRank() == Rank.BOMB || piece.getRank() == Rank.FLAG) {
-            result = false;
-        
-        //check that the piece belongs to the correct player 
-            //this statement works but obviously that means that there is a prior
-            //error. find and fix it
-        } else if (piece.getColor() != players[toMove].getColor()) {
-            result =  false;
-            
-         /* check if destination is already occupied by a piece belonging to the
-         same player */ 
-        } else if (square.isOccupied()
-                && square.getOccupier().getColor() == piece.getColor()) {
-            result = false;
-            
-        //check for diagonal moves
-        } else if (column != piece.getColumn() && row != piece.getRow()) {
-            result = false;
-
-         //check if the piece is a scout
-        } else if (piece.getValue() == 2) {
-            result = checkScoutMove(piece, row, column);
-
-         //check if destination is contiguous with start square
-        } else if (column > piece.getColumn() + 1
-                || column < piece.getColumn() - 1
-                || row > piece.getRow() + 1
-                || row < piece.getRow() - 1) {
-            result = false;
-        }
-       // printMove(result, piece, row, column);
-
-        return result;
-    }
-
-    /**
-     * A convenience method unpackages the data required by is legal(Piece, row, column) 
-     * @param move a data structure holding the coordinates of the piece to be 
-     * moved, prior to and after the move. 
-     * @return true if the proposed move is legal, false otherwise
-     */
-    protected boolean isLegal(Move move) {
-        Square startSquare = board.getSquare(move.getStartRow(), move.getStartColumn());
-        Piece piece = startSquare.getOccupier();
-        return isLegal(piece, move.getDestinationRow(), move.getDestinationColumn());
-    }
+//    /**
+//     * checks the legality of a proposed move. This is where the move rules are
+//     * specified.
+//     *
+//     * @param piece the piece to be moved
+//     * @param column the column index of the destination square
+//     * @param row the row index of the destination square
+//     * @return true if the move is legal, false otherwise.
+//     */
+//    protected boolean isLegal(Piece piece, int row, int column) {
+//        boolean result = true;
+//        if (row >= Game.NUM_ROWS
+//                || column >= Game.NUM_COLUMNS
+//                || row < 0
+//                || column < 0) {
+//            return false;
+//        }
+//        Square square = state.getSquare(row, column);
+//        //check if destination square is active
+//        if (!square.isActive()) {
+//            result = false;
+//            
+//        //check that piece is of a moveable type    
+//        }else if(piece.getRank() == Rank.BOMB || piece.getRank() == Rank.FLAG) {
+//            result = false;
+//        
+//        //check that the piece belongs to the correct player 
+//            //this statement works but obviously that means that there is a prior
+//            //error. find and fix it
+//        } else if (piece.getColor() != players[toMove].getColor()) {
+//            result =  false;
+//            
+//         /* check if destination is already occupied by a piece belonging to the
+//         same player */ 
+//        } else if (square.isOccupied()
+//                && square.getOccupier().getColor() == piece.getColor()) {
+//            result = false;
+//            
+//        //check for diagonal moves
+//        } else if (column != piece.getColumn() && row != piece.getRow()) {
+//            result = false;
+//
+//         //check if the piece is a scout
+//        } else if (piece.getValue() == 2) {
+//            result = checkScoutMove(piece, row, column);
+//
+//         //check if destination is contiguous with start square
+//        } else if (column > piece.getColumn() + 1
+//                || column < piece.getColumn() - 1
+//                || row > piece.getRow() + 1
+//                || row < piece.getRow() - 1) {
+//            result = false;
+//        }
+//       // printMove(result, piece, row, column);
+//
+//        return result;
+//    }
+//
+//    /**
+//     * A convenience method unpackages the data required by is legal(Piece, row, column) 
+//     * @param move a data structure holding the coordinates of the piece to be 
+//     * moved, prior to and after the move. 
+//     * @return true if the proposed move is legal, false otherwise
+//     */
+//    protected boolean isLegal(Move move) {
+//        Square startSquare = state.getSquare(move.getStartRow(), move.getStartColumn());
+//        Piece piece = startSquare.getOccupier();
+//        return isLegal(piece, move.getDestinationRow(), move.getDestinationColumn());
+//    }
 
     protected void printMove(boolean result, Piece piece, int row, int column) {
         System.out.println(result + piece.toString() + row + column);
@@ -229,75 +239,75 @@ public class Game {
      * @param column the column index of the destination square.
      * @return 
      */
-    protected boolean checkScoutMove(Piece piece, int row, int column) {
-        boolean result = true;
-        Square square = board.getSquare(row, column);
-        if (column != piece.getColumn()) {
-            int start = Math.min(column, piece.getColumn());
-            int end = Math.max(column, piece.getColumn());
-            for (int i = start + 1; i < end; i++) {
-                square = board.getSquare(row, i);
-                if (!square.isActive() || square.getOccupier() != null) {
-                    result = false;
-                }
-            }
-        } else {
-            int start = Math.min(row, piece.getRow());
-            int end = Math.max(row, piece.getRow());
-            for (int i = start + 1; i < end; i++) {
-                square = board.getSquare(i, column);
-                if (!square.isActive() || square.isOccupied()) {
-                    result = false;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * to be called when one piece attacks another. Removes the appropriate
-     * piece(s)
-     *
-     * @param square the square upon which the battle takes place
-     * @param defender the piece occupying the square immediately prior to the
-     * battle
-     * @param attacker the piece that has just been moved to the already
-     * occupied square
-     */
-    private void resolveAttack(Square square, Piece defender, Piece attacker) {
-        //check if defender is a bomb
-        if (defender.getRank() == Rank.BOMB) {
-            if (attacker.getRank() == Rank.MINER) {
-                cleanUp(square, attacker, defender);
-            } else {
-                cleanUp(square, defender, attacker);
-            }
-        } else if (attacker.getRank() == Rank.SPY
-                && defender.getRank() == Rank.MARSHAL) {
-            this.cleanUp(square, attacker, defender);
-        } else if (defender.getRank() == Rank.FLAG) {
-            cleanUp(square, attacker, defender);
-            isFlagCaptured = true;
-        } else {
-            if (defender.getValue() == attacker.getValue()) {
-                cleanUpTie(square, attacker, defender);
-            } else {
-                Piece winner = null;
-                Piece loser = null;
-                if (defender.getValue() > attacker.getValue()) {
-                    winner = defender;
-                    loser = attacker;
-                } else if (attacker.getValue() > defender.getValue()) {
-                    winner = attacker;
-                    loser = defender;
-                }
-                cleanUp(square, winner, loser);
-            }
-        }
-        //square object is just a copy. Must reaquire the square.
-        square = board.getSquare(defender.getRow(), defender.getColumn());
-        for(Player player: players) player.revealSquare(square);
-    }
+//    protected boolean checkScoutMove(Piece piece, int row, int column) {
+//        boolean result = true;
+//        Square square = state.getSquare(row, column);
+//        if (column != piece.getColumn()) {
+//            int start = Math.min(column, piece.getColumn());
+//            int end = Math.max(column, piece.getColumn());
+//            for (int i = start + 1; i < end; i++) {
+//                square = state.getSquare(row, i);
+//                if (!square.isActive() || square.getOccupier() != null) {
+//                    result = false;
+//                }
+//            }
+//        } else {
+//            int start = Math.min(row, piece.getRow());
+//            int end = Math.max(row, piece.getRow());
+//            for (int i = start + 1; i < end; i++) {
+//                square = state.getSquare(i, column);
+//                if (!square.isActive() || square.isOccupied()) {
+//                    result = false;
+//                }
+//            }
+//        }
+//        return result;
+//    }
+//
+//    /**
+//     * to be called when one piece attacks another. Removes the appropriate
+//     * piece(s)
+//     *
+//     * @param square the square upon which the battle takes place
+//     * @param defender the piece occupying the square immediately prior to the
+//     * battle
+//     * @param attacker the piece that has just been moved to the already
+//     * occupied square
+//     */
+//    private void resolveAttack(Square square, Piece defender, Piece attacker) {
+//        //check if defender is a bomb
+//        if (defender.getRank() == Rank.BOMB) {
+//            if (attacker.getRank() == Rank.MINER) {
+//                cleanUp(square, attacker, defender);
+//            } else {
+//                cleanUp(square, defender, attacker);
+//            }
+//        } else if (attacker.getRank() == Rank.SPY
+//                && defender.getRank() == Rank.MARSHAL) {
+//            this.cleanUp(square, attacker, defender);
+//        } else if (defender.getRank() == Rank.FLAG) {
+//            cleanUp(square, attacker, defender);
+//            isFlagCaptured = true;
+//        } else {
+//            if (defender.getValue() == attacker.getValue()) {
+//                cleanUpTie(square, attacker, defender);
+//            } else {
+//                Piece winner = null;
+//                Piece loser = null;
+//                if (defender.getValue() > attacker.getValue()) {
+//                    winner = defender;
+//                    loser = attacker;
+//                } else if (attacker.getValue() > defender.getValue()) {
+//                    winner = attacker;
+//                    loser = defender;
+//                }
+//                cleanUp(square, winner, loser);
+//            }
+//        }
+//        //square object is just a copy. Must reaquire the square.
+//        square = state.getSquare(defender.getRow(), defender.getColumn());
+//        for(Player player: players) player.revealSquare(square);
+//    }
 
     /**
      * removes the loser from the board, sets square.occupier to winner, adds
@@ -308,14 +318,15 @@ public class Game {
      * @param winner the new occupier of the square
      * @param loser the captured piece
      */
-    private void cleanUp(Square square, Piece winner, Piece loser) {
-        if (loser.getColor() == Color.BLUE) {
-            blueCaptured.add(loser);
-        } else {
-            redCaptured.add(loser);
-        }
-        board = board.placePiece(loser.getRow(), loser.getColumn(), winner);
-    }
+//    private void cleanUp(Square square, Piece winner, Piece loser) {
+//        if (loser.getColor() == Color.BLUE) {
+//            blueCaptured.add(loser);
+//            blueArmy.remove(loser);
+//        } else {
+//            redCaptured.add(loser);
+//        }
+//        state = state.placePiece(loser.getRow(), loser.getColumn(), winner);
+//    }
 
     /**
      *
@@ -323,16 +334,16 @@ public class Game {
      * @param p1
      * @param p2
      */
-    private void cleanUpTie(Square square, Piece p1, Piece p2) {
-        board = board.clearSquare(p1.getRow(), p1.getColumn());
-        if (p1.getColor() == Color.BLUE) {
-            blueCaptured.add(p1);
-            redCaptured.add(p2);
-        } else {
-            blueCaptured.add(p2);
-            redCaptured.add(p1);
-        }
-    }
+//    private void cleanUpTie(Square square, Piece p1, Piece p2) {
+//        state = state.clearSquare(p1.getRow(), p1.getColumn());
+//        if (p1.getColor() == Color.BLUE) {
+//            blueCaptured.add(p1);
+//            redCaptured.add(p2);
+//        } else {
+//            blueCaptured.add(p2);
+//            redCaptured.add(p1);
+//        }
+//    }
 
     /**
      * processes a move.
@@ -342,16 +353,17 @@ public class Game {
     private void processMove(Move move) {
         int destRow = move.getDestinationRow();
         int destCol = move.getDestinationColumn();
-        Square destSquare = board.getSquare(destRow, destCol);
+        Square destSquare = state.getSquare(destRow, destCol);
+        state = state.makeMove(move);
         if (destSquare.isOccupied()) {
             int row = move.getStartRow();
             int column = move.getStartColumn();
-            Piece piece = board.getSquare(row, column).getOccupier();
-            board = board.clearSquare(row, column);
+            Piece piece = state.getSquare(row, column).getOccupier();
+            state = state.clearSquare(row, column);
             piece = piece.setLocation(destRow, destCol);
-            resolveAttack(destSquare, destSquare.getOccupier(), piece);
-        } else {           
-            board = board.makeMove(move);
+            Piece winner;
+            winner = rules.resolveAttack(state, destSquare.getOccupier(), piece);
+            state = state.clearSquare(row, column);
         }
     }
 

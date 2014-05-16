@@ -27,5 +27,6 @@ public class Simulator extends Game implements Runnable{
     @Override
     protected Color declareWinner() {
         Color winningColor = super.declareWinner();
+        return winningColor;
     }
 }

@@ -1,6 +1,8 @@
 
 package stratego2.model;
 
+import java.util.Objects;
+
 /**
  * A data structure to represent Stratego game pieces. Is and should remain 
  * immutable.
@@ -60,6 +62,41 @@ public class Piece {
         }else return "r"+", "+rank.getValue() + " x="+row + ", y="+column + " ";
      
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + this.row;
+        hash = 53 * hash + this.column;
+        hash = 53 * hash + Objects.hashCode(this.rank);
+        hash = 53 * hash + Objects.hashCode(this.color);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Piece other = (Piece) obj;
+        if (this.row != other.row) {
+            return false;
+        }
+        if (this.column != other.column) {
+            return false;
+        }
+        if (this.rank != other.rank) {
+            return false;
+        }
+        if (this.color != other.color) {
+            return false;
+        }
+        return true;
+    }
+    
     
 
 }

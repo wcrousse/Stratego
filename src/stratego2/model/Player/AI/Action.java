@@ -56,8 +56,5 @@ public class Action {
     public Move getMove() {
         return move;
     }
-    
-    public GameState produceSuccessor(){
-        
-    }
+ 
 }

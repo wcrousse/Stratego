@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
+import stratego2.model.Game;
 import stratego2.model.Move;
 import stratego2.model.Piece;
 import stratego2.model.Player.Player;
+import stratego2.model.Rank;
 import stratego2.model.Square;
 import stratego2.model.StrategoRules;
 
@@ -17,23 +19,22 @@ import stratego2.model.StrategoRules;
  * @author roussew
  */
 public abstract class AIPlayer implements Player {
+    private Color color;
+    private final StrategoRules rules;
     protected GameState state;
     protected ArrayList<Action> availableMoves;
     protected StrategoRules gameLogic;
     protected ArrayList<Piece> army;
+    protected Move lastMove;
     
     public AIPlayer() {
         availableMoves = new ArrayList<>();
+        rules = new StrategoRules();
     }
     
-    public Move getMove(Board board) {
-        
-        return null;
-    }
-
-    @Override
-    public void reportIllegalMove() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public AIPlayer(Color color, StrategoRules rules) {
+        this.color = color;
+        this.rules = rules;
     }
 
     @Override
@@ -48,7 +49,78 @@ public abstract class AIPlayer implements Player {
 
     @Override
     public Color getColor() {
+        return color;
+    }
+    
+    protected ArrayList<Action> generateSucessors(GameState state) {
+        List<Piece> movablePieces = state.getMovablePieces();
+        ArrayList<Action> possibleActions = getPossibleActions(movablePieces, state);
+        return possibleActions;
+    }
+    
+    private ArrayList<Action> getPossibleActions(List<Piece> movablePieces, 
+            GameState state) {
+        ArrayList<Action> possibleActions = new ArrayList<>();
+        for (Piece p: movablePieces) {
+            possibleActions.addAll(getPossibleActions(p, state));
+        }
+        return possibleActions;
+    }
+    
+    private ArrayList<Action> getPossibleActions(Piece piece, GameState state) {
+        ArrayList<Action> possibleActions;
+        if(piece.getRank() == Rank.SCOUT) {
+            possibleActions = getScoutActions(piece, state);
+            
+        } else {
+            possibleActions = new ArrayList<>();
+            int startRow = piece.getRow();
+            int startColumn = piece.getColumn();
+            Move[] moves = new Move[4];
+            moves[0] = new Move(startRow, startColumn, startRow, startColumn -1);
+            moves[1] = new Move(startRow, startColumn, startRow, startColumn +1);
+            moves[2] = new Move(startRow, startColumn, startRow-1, startColumn);
+            moves[3] = new Move(startRow, startColumn, startRow+1, startColumn);
+            
+            for(Move move: moves) {
+                if (rules.isLegal(state, piece, move.getDestinationRow(),
+                        move.getDestinationColumn())) {
+                    possibleActions.add(new Action(state, move));
+                }
+            }
+        }
+        return possibleActions;
+    }
+    
+    private ArrayList<Action> getScoutActions(Piece piece, GameState state) {
+        int startRow = piece.getRow();
+        int startColumn = piece.getColumn();
+        ArrayList<Action> scoutActions = new ArrayList<>();
+        for (int i=0; i<Game.NUM_ROWS; i++) {
+            if (rules.isLegal(state, piece, i, startColumn)) {
+                Move move = new Move(startRow, startColumn, i, startColumn);
+                scoutActions.add(new Action(state, move));
+            }
+            if (rules.isLegal(state, piece, startRow, i)) {
+                Move move = new Move(startRow, startColumn, startRow, i);
+                scoutActions.add(new Action(state, move));
+            }
+        }
+        return scoutActions;
+    }
+
+    @Override
+    public Move getMove(Board board) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * should never be called. AI should not attempt illegal moves.
+     * @throws Exception 
+     */
+    @Override
+    public void reportIllegalMove() throws Exception{
+        throw new Exception("AI made illegal move" + lastMove.toString());
     }
 
     @Override
@@ -60,8 +132,6 @@ public abstract class AIPlayer implements Player {
     public void reportResult(Color color) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
     
-    protected ArrayList<Action> generateSucessors() {
-        
-    }
 }

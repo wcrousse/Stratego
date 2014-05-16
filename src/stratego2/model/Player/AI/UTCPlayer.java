@@ -2,7 +2,7 @@
 
 package stratego2.model.Player.AI;
 
-import stratego2.model.Player.Player;
+import java.util.ArrayList;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
@@ -16,17 +16,25 @@ import stratego2.view.Display;
  *
  * @author roussew
  */
-public class UTCPlayer implements Player {
-
+public class UTCPlayer extends AIPlayer {
+    private final Color color;
+    
+    public UTCPlayer(Color color) {
+        this.color = color;
+    }
+    
+    public UTCPlayer(Color color, StrategoRules, rules) {
+        this.rules = rules;
+        this.color = color;
+    }
+    
     @Override
     public Move getMove(Board board) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        state = new GameState(board, color);
+        ArrayList<Action>possibleActions = getSuccessors(state);
+        return null;
     }
 
-    @Override
-    public void reportIllegalMove() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public void displayBoard(Board board) {

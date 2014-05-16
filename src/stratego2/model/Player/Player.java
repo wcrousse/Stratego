@@ -24,8 +24,9 @@ public interface Player {
     /**
      * informs the player that the move he/she just selected was not legal, that
      * it is still the player's move
+     * @throws java.lang.Exception
      */
-    public void reportIllegalMove();
+    public void reportIllegalMove() throws Exception;
 
     /**
      * Displays the current game state to the player. In general this method

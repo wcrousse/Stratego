@@ -15,7 +15,12 @@ import java.util.NoSuchElementException;
  * @author roussew
  */
 public class Board implements Iterable<Square>{
-    private final Square[][] squares;
+
+    /**
+     * represents the current configuration of the Stratego board
+     */
+    protected final Square[][] squares;
+    
     private boolean isFlagCaptured;
     /**
      * default constructor.
