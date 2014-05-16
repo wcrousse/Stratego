@@ -155,4 +155,9 @@ public class TextDisplay implements Display {
         }
     }
 
+    @Override
+    public void displayResults(Color color) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

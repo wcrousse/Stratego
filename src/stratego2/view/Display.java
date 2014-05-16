@@ -2,6 +2,7 @@
 package stratego2.view;
 
 import stratego2.model.Board;
+import stratego2.model.Color;
 import stratego2.model.Move;
 import stratego2.model.Piece;
 
@@ -47,5 +48,12 @@ public interface Display {
      * @param piece 
      */
     public void revealSquare(Piece piece);
+    
+    /**
+     * Intended to be called after one side has won the game. Informs the player
+     * of the result
+     * @param color the color of the pieces controlled by the winning player
+     */
+    public void displayResults(Color color);
     
 }

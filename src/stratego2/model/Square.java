@@ -7,13 +7,12 @@ package stratego2.model;
 public class Square {
 
     private Piece occupier;
-    private boolean isActive;
+    private final boolean isActive;
 
-    public Square() {
-    }
 
     public Square(boolean isActive) {
         this.isActive = isActive;
+        occupier = null;
     }
 
     public Square(Piece piece) {
@@ -54,7 +53,7 @@ public class Square {
     }
 
     public Piece getOccupier() {
-        return occupier;
+        return new Piece(occupier);
     }
 
     public boolean isActive() {
@@ -62,6 +61,6 @@ public class Square {
     }
 
     public void setOccupier(Piece piece) {
-        this.occupier = piece;
+        occupier = piece;
     }
 }

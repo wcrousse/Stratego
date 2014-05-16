@@ -4,6 +4,8 @@ import stratego2.model.Player.HumanPlayer;
 import stratego2.model.Player.Player;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -14,13 +16,13 @@ public class Game {
     public static final int NUM_ROWS = 10;
     public static final int NUM_COLUMNS = 10;
 
-    private static final int RED = 0;
-    private static final int BLUE = 1;
+    public static final int RED = 0;
+    public final int BLUE = 1;
     public static final int ARMY_SIZE = 40;
     /**
      * a tuple to hold the player objects.  
      **/
-    private Player[] players;
+    Player[] players;
     /**
      * intended as to index the players array. Should be incremented and then
      * modded by 2 following each move. Thus, should only equal 0 or 1.
@@ -43,20 +45,25 @@ public class Game {
     /**
      * begins the game.
      */
-    public void play() {
+    public void startGame() {
         setupBoard();
         //players[1].setDisplay(new GameFrame(players[1].getColor()));
         toMove = RED;
+        Color winner = play();
+    }
+    protected Color play() {
         do {
+            for (Player p: players) p.displayBoard(board);
             Move move = players[toMove].getMove(board);
             while (!isLegal(move)) {
                 players[toMove].reportIllegalMove();
                 move = players[toMove].getMove(board);
             }
             processMove(move);
-            for (Player p: players) p.displayBoard(board);
+            
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
+        return declareWinner();
     }
 
     public void setPlayers(Player bluePlayer, Player redPlayer) {
@@ -69,40 +76,29 @@ public class Game {
      * starting configuration of their pieces.
      */
     private void setupBoard() {
-        board.initialize();
-        blueArmy = players[0].getSetup();
-        redArmy = players[1].getSetup();
 
-        new Thread() {
-            public void run() {
-                setPieces(blueArmy);
-            }
-        }.start();
-        
-        new Thread() {
-            public void run() {
-                setPieces(redArmy);
-            }
-        }.start();
-    }
-
-
-    /**
-     * places the pieces on the board.
-     *
-     * @param army a list containing all of a single players pieces.
-     */
-    private void setPieces(List<Piece> army) {
-        for (Piece p : army) {
-            int i, j;
-            i = p.getRow();
-            j = p.getColumn();
-            board.placePiece(i, j, p);
+        try {
+            Thread t1 = new Thread() {
+                @Override
+                public void run() {
+                    blueArmy = players[0].getSetup();
+                }
+            };
+            
+            Thread t2 = new Thread() {
+                @Override
+                public void run() {
+                    redArmy = players[1].getSetup();
+                }
+            };
+            t1.start();
+            t2.start();
+            t1.join();
+            t2.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-    }
-
-    private void getMove(HumanPlayer player) {
+        board = new Board(redArmy, blueArmy);
     }
 
     /**
@@ -112,7 +108,7 @@ public class Game {
      * @return returns true if the player's flag has been captured or if the
      * player has no available moves and false otherwise.
      */
-    private boolean isGameOver() {
+    protected boolean isGameOver() {
         boolean result = true;
         if (!isFlagCaptured) {
             List<Piece> army = (toMove != BLUE) ? blueArmy : redArmy;
@@ -134,7 +130,7 @@ public class Game {
      * @param piece the piece to be tested
      * @return true if the piece can move, false otherwise
      */
-    private boolean hasMove(Piece piece) {
+    protected boolean hasMove(Piece piece) {
         boolean result = false;
         if (isLegal(piece, piece.getRow() - 1, piece.getColumn())) {
             result = true;
@@ -157,7 +153,7 @@ public class Game {
      * @param row the row index of the destination square
      * @return true if the move is legal, false otherwise.
      */
-    private boolean isLegal(Piece piece, int row, int column) {
+    protected boolean isLegal(Piece piece, int row, int column) {
         boolean result = true;
         if (row >= Game.NUM_ROWS
                 || column >= Game.NUM_COLUMNS
@@ -212,13 +208,13 @@ public class Game {
      * moved, prior to and after the move. 
      * @return true if the proposed move is legal, false otherwise
      */
-    private boolean isLegal(Move move) {
+    protected boolean isLegal(Move move) {
         Square startSquare = board.getSquare(move.getStartRow(), move.getStartColumn());
         Piece piece = startSquare.getOccupier();
         return isLegal(piece, move.getDestinationRow(), move.getDestinationColumn());
     }
 
-    private void printMove(boolean result, Piece piece, int row, int column) {
+    protected void printMove(boolean result, Piece piece, int row, int column) {
         System.out.println(result + piece.toString() + row + column);
     }
 
@@ -233,7 +229,7 @@ public class Game {
      * @param column the column index of the destination square.
      * @return 
      */
-    private boolean checkScoutMove(Piece piece, int row, int column) {
+    protected boolean checkScoutMove(Piece piece, int row, int column) {
         boolean result = true;
         Square square = board.getSquare(row, column);
         if (column != piece.getColumn()) {
@@ -250,7 +246,7 @@ public class Game {
             int end = Math.max(row, piece.getRow());
             for (int i = start + 1; i < end; i++) {
                 square = board.getSquare(i, column);
-                if (!square.isActive() || square.getOccupier() != null) {
+                if (!square.isActive() || square.isOccupied()) {
                     result = false;
                 }
             }
@@ -318,7 +314,7 @@ public class Game {
         } else {
             redCaptured.add(loser);
         }
-        board.placePiece(loser.getRow(), loser.getColumn(), winner);
+        board = board.placePiece(loser.getRow(), loser.getColumn(), winner);
     }
 
     /**
@@ -328,7 +324,7 @@ public class Game {
      * @param p2
      */
     private void cleanUpTie(Square square, Piece p1, Piece p2) {
-        board.clearSquare(p1.getRow(), p1.getColumn());
+        board = board.clearSquare(p1.getRow(), p1.getColumn());
         if (p1.getColor() == Color.BLUE) {
             blueCaptured.add(p1);
             redCaptured.add(p2);
@@ -344,21 +340,25 @@ public class Game {
      * @param move
      */
     private void processMove(Move move) {
-        int startRow = move.getStartRow();
-        int startColumn = move.getStartColumn();
-        Square startSquare = board.getSquare(startRow, startColumn);
-        Piece piece = startSquare.getOccupier();
         int destRow = move.getDestinationRow();
         int destCol = move.getDestinationColumn();
-        piece.setRow(destRow);
-        piece.setColumn(destCol);
         Square destSquare = board.getSquare(destRow, destCol);
-        board.placePiece(startRow, startColumn, null);
         if (destSquare.isOccupied()) {
+            int row = move.getStartRow();
+            int column = move.getStartColumn();
+            Piece piece = board.getSquare(row, column).getOccupier();
+            board = board.clearSquare(row, column);
+            piece = piece.setLocation(destRow, destCol);
             resolveAttack(destSquare, destSquare.getOccupier(), piece);
         } else {           
-            board.placePiece(destRow, destCol, piece);
+            board = board.makeMove(move);
         }
+    }
+
+    protected Color declareWinner() {
+        Player winner = (toMove == BLUE)? players[BLUE]: players[RED];
+        for(Player p: players) p.reportResult(winner.getColor());
+        return winner.getColor();
     }
 
 }

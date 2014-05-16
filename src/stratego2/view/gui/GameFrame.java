@@ -193,12 +193,9 @@ public class GameFrame extends JFrame implements Display {
     }
 
     @Override
-    @SuppressWarnings("empty-statement")
     public void displayBoard(Board board) {
         //for testing only. replace with more sophisticated method.
         System.out.println("done initailizing? " + isInitailized);
-        while (!isInitailized) {
-        }
 
         System.out.println("Initialization complete");
         for (int i = 0; i < Game.NUM_ROWS; i++) {
@@ -263,6 +260,11 @@ public class GameFrame extends JFrame implements Display {
                 }
             }.start();
         }
+    }
+
+    @Override
+    public void displayResults(stratego2.model.Color color) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**

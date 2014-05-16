@@ -25,11 +25,6 @@ public class HumanPlayer implements Player{
     private Color color;
     private Display view;
 
-    public HumanPlayer(Piece[] army) {
-        this.army = new ArrayList<>();
-        this.army.addAll(Arrays.asList(army));
-    }
-
     public HumanPlayer(Color color, Display view) {
         this.color = color;
         this.view = view;
@@ -72,15 +67,12 @@ public class HumanPlayer implements Player{
         for (int i = 0; i < simpleLayout.length; i++) {
             for (int j = 0; j < simpleLayout[i].length; j++) {
                 int value = simpleLayout[i][j];
-                Piece p = new Piece(Rank.getRank(value), color);
-
-                //blue plays from the top.
+                Rank rank = Rank.getRank(value);
+                Piece p;
                 if (this.color == Color.BLUE) {
-                    p.setRow(i);
-                    p.setColumn(j);
+                    p = new Piece(rank, color, i, j);
                 } else {
-                    p.setRow(9 - i);
-                    p.setColumn(9 - j);
+                    p = new Piece(rank, color, 9-i, 9-j);
                 }
 
                 army.add(p);
@@ -89,26 +81,35 @@ public class HumanPlayer implements Player{
         return army;
     }
 
+    @Override
     public Color getColor() {
         return color;
     }
 
+    @Override
     public void reportIllegalMove() {
         view.reportIllegalMove();
     }
 
+    @Override
     public void revealSquare(Square square) {
-        System.out.println("reveal the squares" + square.getOccupier());
         if (square.isOccupied() && square.getOccupier().getColor() != color) {
             view.revealSquare(square.getOccupier());
         }
     }
 
+    @Override
     public void displayBoard(Board board) {
         view.displayBoard(board);
     }
 
     void setDisplay(GameFrame gameFrame) {
         this.view = gameFrame;
+    }
+
+    
+    @Override
+    public void reportResult(Color color) {
+        view.displayResults(color);
     }
 }

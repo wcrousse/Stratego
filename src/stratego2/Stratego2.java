@@ -23,7 +23,7 @@ public class Stratego2 {
         HumanPlayer redPlayer = new HumanPlayer(Color.RED, new GameFrame(Color.RED));
         Game game = new Game();
         game.setPlayers(bluePlayer, redPlayer);
-        game.play();
+        game.startGame();
         
     }
     
