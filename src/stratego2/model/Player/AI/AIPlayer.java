@@ -19,7 +19,7 @@ import stratego2.model.StrategoRules;
  * @author roussew
  */
 public abstract class AIPlayer implements Player {
-    private Color color;
+    Color color;
     private final StrategoRules rules;
     protected GameState state;
     protected ArrayList<Action> availableMoves;
@@ -33,18 +33,14 @@ public abstract class AIPlayer implements Player {
     }
     
     public AIPlayer(Color color, StrategoRules rules) {
+        army = new ArrayList<>();
         this.color = color;
         this.rules = rules;
     }
 
     @Override
     public void displayBoard(Board board) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Piece> getSetup() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        state = (GameState)board;
     }
 
     @Override
@@ -52,6 +48,12 @@ public abstract class AIPlayer implements Player {
         return color;
     }
     
+    /**
+     * generates a list of all of the moves available to the player at the given
+     * game state.
+     * @param state the current game state
+     * @return the list of available actions.
+     */
     protected ArrayList<Action> generateSucessors(GameState state) {
         List<Piece> movablePieces = state.getMovablePieces();
         ArrayList<Action> possibleActions = getPossibleActions(movablePieces, state);
@@ -109,11 +111,6 @@ public abstract class AIPlayer implements Player {
         return scoutActions;
     }
 
-    @Override
-    public Move getMove(Board board) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     /**
      * should never be called. AI should not attempt illegal moves.
      * @throws Exception 
@@ -125,12 +122,13 @@ public abstract class AIPlayer implements Player {
 
     @Override
     public void revealSquare(Square square) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println(square);
     }
 
     @Override
     public void reportResult(Color color) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        System.out.println("winner = " + color.toString());
     }
 
     

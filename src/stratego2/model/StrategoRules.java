@@ -15,10 +15,11 @@ public class StrategoRules {
      * examines the position of the player to move. to be called after each move
      * is made.
      *
+     * @param state the current game state
      * @return returns true if the player's flag has been captured or if the
      * player has no available moves and false otherwise.
      */
-    private boolean isGameOver(GameState state) {
+    public boolean isGameOver(GameState state) {
         boolean result = true;
         if (!state.isFlagCaptured()) {
             List<Piece> army = state.getMovablePieces();
@@ -151,7 +152,7 @@ public class StrategoRules {
             int end = Math.max(column, piece.getColumn());
             for (int i = start + 1; i < end; i++) {
                 square = state.getSquare(row, i);
-                if (!square.isActive() || square.getOccupier() != null) {
+                if (!square.isActive() || square.isOccupied()) {
                     result = false;
                 }
             }

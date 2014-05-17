@@ -54,6 +54,7 @@ public class Game {
         //players[1].setDisplay(new GameFrame(players[1].getColor()));
         toMove = RED;
         Color winner = play();
+        for (Player p: players) p.reportResult(winner);
     }
     protected Color play() throws Exception {
         do {
@@ -73,6 +74,7 @@ public class Game {
             
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
+        for (Player p: players) p.displayBoard(state);
         return declareWinner();
     }
 
@@ -120,7 +122,7 @@ public class Game {
      */
     protected boolean isGameOver() {
         boolean result = true;
-        if (!isFlagCaptured) {
+        if (!isFlagCaptured) {  
             List<Piece> army = (toMove != BLUE) ? blueArmy : redArmy;
             for (Piece piece : army) {
                 if (hasMove(piece)) {
@@ -177,8 +179,10 @@ public class Game {
             piece = piece.setLocation(destRow, destCol);
             Piece winner;
             winner = rules.resolveAttack(state, defender, piece);
-            System.out.println(winner);
+            
             state = state.placePiece(destRow, destCol, winner);
+            destSquare = state.getSquare(destRow, destCol);
+            if (defender.getRank() == Rank.FLAG) isFlagCaptured = true;
             for(Player p: players) p.revealSquare(destSquare);
         }
         else {
