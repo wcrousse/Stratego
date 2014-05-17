@@ -3,6 +3,8 @@
 
 package stratego2;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import stratego2.model.Color;
 import stratego2.model.Game;
 import stratego2.model.Player.HumanPlayer;
@@ -23,7 +25,11 @@ public class Stratego2 {
         HumanPlayer redPlayer = new HumanPlayer(Color.RED, new GameFrame(Color.RED));
         Game game = new Game();
         game.setPlayers(bluePlayer, redPlayer);
-        game.startGame();
+        try {
+            game.startGame();
+        } catch (Exception ex) {
+            Logger.getLogger(Stratego2.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
     

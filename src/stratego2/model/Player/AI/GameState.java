@@ -49,8 +49,7 @@ public class GameState extends Board {
     
     @Override
     public GameState placePiece(int row, int column, Piece piece) {
-        Color nextColor = (toMove == Color.RED)? Color.BLUE: Color.RED;
-        GameState newBoard = new GameState(this, nextColor);
+        GameState newBoard = new GameState(this, this.toMove);
         Square square = newBoard.squares[row][column];
         if(square.isActive())
             square.setOccupier(piece);
