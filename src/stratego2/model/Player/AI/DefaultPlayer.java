@@ -101,4 +101,9 @@ public class DefaultPlayer extends AIPlayer {
     public double getStartStateUtility() {
         return startState.getUtility();
     }
+
+    @Override
+    public void reportMove(Move move) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

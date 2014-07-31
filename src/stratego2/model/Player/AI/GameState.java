@@ -19,7 +19,7 @@ import stratego2.model.Square;
  * @author roussew
  */
 public class GameState extends Board {
-
+    private Color playerColor;
     private List<Piece> blueArmy;
     private List<Piece> redArmy;
     /**
@@ -29,16 +29,17 @@ public class GameState extends Board {
     private final Color toMove;
     private double utility;
 
-    public GameState(Color toMove, List<Piece> redArmy, List<Piece> blueArmy) {
+    public GameState( Color toMove, List<Piece> redArmy, List<Piece> blueArmy ) {
         super(redArmy, blueArmy);
         this.toMove = toMove;
         this.redArmy = redArmy;
         this.blueArmy = blueArmy;
     }
 
-    public GameState(Board board, Color toMove) {
-        super(board);
-        this.toMove = toMove;
+    public GameState( Board board, Color playerColor ) {
+        super( board );
+        this.playerColor = playerColor;
+        toMove = Color.RED;
     }
 
     public GameState() {
@@ -48,26 +49,27 @@ public class GameState extends Board {
     }
 
     @Override
-    public GameState placePiece(int row, int column, Piece piece) {
-        GameState newBoard = new GameState(this, this.toMove);
+    public GameState placePiece( int row, int column, Piece piece ) {
+        GameState newBoard = new GameState( this, this.toMove );
         Square square = newBoard.squares[row][column];
-        if (square.isActive()) {
-            square.setOccupier(piece);
+        if ( square.isActive() ) {
+            square.setOccupier( piece );
         }
         return newBoard;
     }
 
     @Override
-    public GameState clearSquare(int row, int column) {
-        GameState newBoard = new GameState(this, this.toMove);
+    public GameState clearSquare( int row, int column ) {
+        GameState newBoard = new GameState( this, this.toMove );
         Square square = newBoard.squares[row][column];
-        square.setOccupier(null);
+        square.setOccupier( null );
         return newBoard;
     }
 
-    public GameState makeMove(Move move) {
-        Color nextColor = (toMove == Color.RED) ? Color.BLUE : Color.RED;
-        GameState board = new GameState(this, nextColor);
+    @Override
+    public GameState makeMove( Move move ) {
+        Color nextColor = ( toMove == Color.RED ) ? Color.BLUE : Color.RED;
+        GameState board = new GameState( this, nextColor );
         int startRow = move.getStartRow();
         int startColumn = move.getStartColumn();
         int destinationRow = move.getDestinationRow();
@@ -75,9 +77,9 @@ public class GameState extends Board {
         Square startSquare = board.squares[startRow][startColumn];
         Square destination = board.squares[destinationRow][destinationColumn];
         Piece piece = startSquare.getOccupier();
-        startSquare.setOccupier(null);
+        startSquare.setOccupier( null );
         piece = piece.setLocation(destinationRow, destinationColumn);
-        destination.setOccupier(piece);
+        destination.setOccupier( piece );
         return board;
     }
 
@@ -90,10 +92,10 @@ public class GameState extends Board {
      */
     public List<Piece> getMovablePieces() {
         ArrayList<Piece> movablePieces = new ArrayList<>();
-        for (int i = 0; i < squares.length; i++) {
-            for (int j = 0; j < squares[i].length; j++) {
+        for ( int i = 0; i < squares.length; i++ ) {
+            for ( int j = 0; j < squares[i].length; j++ ) {
                 Square square = squares[i][j];
-                if (square.isOccupied()) {
+                if ( square.isOccupied() ) {
                     Piece p = square.getOccupier();
                     if (p.getColor() == toMove
                             && p.getRank() != Rank.BOMB
@@ -143,26 +145,26 @@ public class GameState extends Board {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj ) {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final GameState other = (GameState) obj;
-        if (this.toMove != other.toMove) {
+        final GameState other = ( GameState ) obj;
+        if ( this.toMove != other.toMove ) {
             return false;
         }
-        if (Double.doubleToLongBits(this.utility)
-                != Double.doubleToLongBits(other.utility)) {
+        if (Double.doubleToLongBits( this.utility )
+                != Double.doubleToLongBits( other.utility) ) {
             return false;
         }
 
-        return areBoardsEqual(other.squares);
+        return areBoardsEqual( other.squares );
     }
 
-    private boolean areBoardsEqual(Square[][] others) {
+    private boolean areBoardsEqual( Square[][] others ) {
         for (int i = 0; i < squares.length; i++) {
             for (int j = 0; j < squares[i].length; j++) {
                 if (!squares[i][j].equals(others[i][j])) {

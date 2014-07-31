@@ -10,11 +10,11 @@ import java.util.NoSuchElementException;
  * Represents a game state. As with all game model data-structures, the Board
  * class is and should remain immutable. All getters return deep copies 
  * of the current board. Immutability is an important property here. It allows
- * us to more clearly and concisely express AI algorithms (i.e. it decouples 
- * planning and game-state duplication logic).
+ * us to more clearly and concisely express AI algorithms by decoupling 
+ * planning and game-state duplication logic.
  * @author roussew
  */
-public class Board implements Iterable<Square>{
+public class Board implements Iterable<Square> {
 
     /**
      * represents the current configuration of the Stratego board

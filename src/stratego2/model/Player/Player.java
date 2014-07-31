@@ -61,4 +61,9 @@ public interface Player {
      */
     public void reportResult(Color color);
     
+    /**
+     * reveals the move that was most recently made
+     * @param move 
+     */
+    public void reportMove(Move move);
 }

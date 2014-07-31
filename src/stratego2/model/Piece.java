@@ -24,7 +24,7 @@ public class Piece {
         this(original.getRank(), original.getColor(),
                 original.getRow(), original.getColumn());
     }
-
+    
     public int getRow() {
         return row;
     }

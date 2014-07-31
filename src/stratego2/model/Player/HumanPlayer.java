@@ -112,4 +112,9 @@ public class HumanPlayer implements Player{
     public void reportResult(Color color) {
         view.displayResults(color);
     }
+
+    @Override
+    public void reportMove(Move move) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

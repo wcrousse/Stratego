@@ -71,6 +71,7 @@ public class Game {
                 move = players[toMove].getMove(state);
             }
             processMove(move);
+            for (Player p: players) p.reportMove(move);
             
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
@@ -188,6 +189,7 @@ public class Game {
         else {
             state = state.makeMove(move);
         }
+        
     }
 
     protected Color declareWinner() {
@@ -195,5 +197,5 @@ public class Game {
         //for(Player p: players) p.reportResult(winner.getColor());
         return winner.getColor();
     }
-
+    
 }
