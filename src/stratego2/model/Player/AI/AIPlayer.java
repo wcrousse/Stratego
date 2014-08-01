@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
+import stratego2.model.FriendlyPiece;
 import stratego2.model.Game;
+import stratego2.model.GameState;
 import stratego2.model.Move;
 import stratego2.model.Piece;
 import stratego2.model.Player.Player;
@@ -20,27 +22,25 @@ import stratego2.model.StrategoRules;
  */
 public abstract class AIPlayer implements Player {
     Color color;
-    private final StrategoRules rules;
+    private final static StrategoRules rules = new StrategoRules();
     protected GameState state;
-    protected ArrayList<Action> availableMoves;
+    protected ArrayList<MCSTNode> availableMoves;
     protected StrategoRules gameLogic;
-    protected ArrayList<Piece> army;
+    protected ArrayList<FriendlyPiece> army;
     protected Move lastMove;
     
     public AIPlayer() {
         availableMoves = new ArrayList<>();
-        rules = new StrategoRules();
     }
     
     public AIPlayer(Color color, StrategoRules rules) {
         army = new ArrayList<>();
         this.color = color;
-        this.rules = rules;
     }
 
     @Override
-    public void displayBoard(Board board) {
-        state = (GameState)board;
+    public void displayBoard() {
+        //do nothing
     }
 
     @Override
@@ -54,23 +54,23 @@ public abstract class AIPlayer implements Player {
      * @param state the current game state
      * @return the list of available actions.
      */
-    protected ArrayList<Action> generateSucessors(GameState state) {
-        List<Piece> movablePieces = state.getMovablePieces();
-        ArrayList<Action> possibleActions = getPossibleActions(movablePieces, state);
+    protected static ArrayList<MCSTNode> generateSucessors(GameState state) {
+        List<FriendlyPiece> movablePieces = state.getMovablePieces();
+        ArrayList<MCSTNode> possibleActions = getPossibleActions(movablePieces, state);
         return possibleActions;
     }
     
-    private ArrayList<Action> getPossibleActions(List<Piece> movablePieces, 
+    static ArrayList<MCSTNode> getPossibleActions(List<FriendlyPiece> movablePieces, 
             GameState state) {
-        ArrayList<Action> possibleActions = new ArrayList<>();
-        for (Piece p: movablePieces) {
+        ArrayList<MCSTNode> possibleActions = new ArrayList<>();
+        for (FriendlyPiece p: movablePieces) {
             possibleActions.addAll(getPossibleActions(p, state));
         }
         return possibleActions;
     }
     
-    private ArrayList<Action> getPossibleActions(Piece piece, GameState state) {
-        ArrayList<Action> possibleActions;
+    static ArrayList<MCSTNode> getPossibleActions(FriendlyPiece piece, GameState state) {
+        ArrayList<MCSTNode> possibleActions;
         if(piece.getRank() == Rank.SCOUT) {
             possibleActions = getScoutActions(piece, state);
             
@@ -87,25 +87,25 @@ public abstract class AIPlayer implements Player {
             for(Move move: moves) {
                 if (rules.isLegal(state, piece, move.getDestinationRow(),
                         move.getDestinationColumn())) {
-                    possibleActions.add(new Action(state, move));
+                    possibleActions.add(new MCSTNode(state, move));
                 }
             }
         }
         return possibleActions;
     }
     
-    private ArrayList<Action> getScoutActions(Piece piece, GameState state) {
+    static ArrayList<MCSTNode> getScoutActions(FriendlyPiece piece, GameState state) {
         int startRow = piece.getRow();
         int startColumn = piece.getColumn();
-        ArrayList<Action> scoutActions = new ArrayList<>();
+        ArrayList<MCSTNode> scoutActions = new ArrayList<>();
         for (int i=0; i<Game.NUM_ROWS; i++) {
             if (rules.isLegal(state, piece, i, startColumn)) {
                 Move move = new Move(startRow, startColumn, i, startColumn);
-                scoutActions.add(new Action(state, move));
+                scoutActions.add(new MCSTNode(state, move));
             }
             if (rules.isLegal(state, piece, startRow, i)) {
                 Move move = new Move(startRow, startColumn, startRow, i);
-                scoutActions.add(new Action(state, move));
+                scoutActions.add(new MCSTNode(state, move));
             }
         }
         return scoutActions;

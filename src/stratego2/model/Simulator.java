@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import stratego2.model.Game;
 import stratego2.model.Player.AI.DefaultPlayer;
 import stratego2.model.Player.Player;
-import stratego2.model.Player.AI.GameState;
 /**
  *
  * @author roussew

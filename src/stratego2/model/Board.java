@@ -42,7 +42,7 @@ public class Board implements Iterable<Square> {
      * @param redArmy
      * @param blueArmy 
      */
-    public Board(List<Piece> redArmy, List<Piece> blueArmy) {
+    public Board(List<? extends Piece> redArmy, List<? extends Piece> blueArmy) {
         this();
         for(Piece p: redArmy) {
             squares[p.getRow()][p.getColumn()].setOccupier(p);
@@ -85,24 +85,24 @@ public class Board implements Iterable<Square> {
      * squares are represented with -1. 
      * @return the array representation of the board
      */
-    public int[][] getIntBoard() {
-        int[][] simpleBoard = new int[Game.NUM_ROWS][Game.NUM_COLUMNS];
-        for (int i=0; i<squares.length; i++) {
-            for (int j=0; j<squares.length; j++) {
-                Square square = squares[i][j];
-                int val = 0;
-                if (!square.isActive()) val = -1;
-                else {
-                    if (square.isOccupied()) {
-                        val = square.getOccupier().getValue();
-                    }
-                }                
-                simpleBoard[i][j] = val;
-            }
-        }
-        return simpleBoard;
-    }
-    
+//    public int[][] getIntBoard() {
+//        int[][] simpleBoard = new int[Game.NUM_ROWS][Game.NUM_COLUMNS];
+//        for (int i=0; i<squares.length; i++) {
+//            for (int j=0; j<squares.length; j++) {
+//                Square square = squares[i][j];
+//                int val = 0;
+//                if (!square.isActive()) val = -1;
+//                else {
+//                    if (square.isOccupied()) {
+//                        val = square.getOccupier().getValue();
+//                    }
+//                }                
+//                simpleBoard[i][j] = val;
+//            }
+//        }
+//        return simpleBoard;
+//    }
+//    
     
     /**
      * sets the occupier of the square at the given coordinates. Returns a deep
@@ -132,20 +132,20 @@ public class Board implements Iterable<Square> {
      * moved both before and after the move is made.
      * @return the new board.
      */
-    public Board makeMove(Move move) {
-        Board board = new Board(this);
-        int startRow = move.getStartRow();
-        int startColumn = move.getStartColumn();
-        int destinationRow = move.getDestinationRow();
-        int destinationColumn = move.getDestinationColumn();
-        Square startSquare = board.squares[startRow][startColumn];
-        Square destination = board.squares[destinationRow][destinationColumn];
-        Piece piece = startSquare.getOccupier();
-        startSquare.setOccupier(null);
-        piece = piece.setLocation(destinationRow, destinationColumn);
-        destination.setOccupier(piece); 
-        return board;
-    }
+//    public Board makeMove(Move move) {
+//        Board board = new Board(this);
+//        int startRow = move.getStartRow();
+//        int startColumn = move.getStartColumn();
+//        int destinationRow = move.getDestinationRow();
+//        int destinationColumn = move.getDestinationColumn();
+//        Square startSquare = board.squares[startRow][startColumn];
+//        Square destination = board.squares[destinationRow][destinationColumn];
+//        Piece piece = startSquare.getOccupier();
+//        startSquare.setOccupier(null);
+//        piece = piece.setLocation(destinationRow, destinationColumn);
+//        destination.setOccupier(piece); 
+//        return board;
+//    }
     
     /**
      * returns a copy of this board with the occupying piece from the square
@@ -155,15 +155,15 @@ public class Board implements Iterable<Square> {
      * @return a reference to the resulting game-state. In the future this will
      * likely be a completely new game object. 
      */
-    public Board clearSquare(int row, int column) {
-        Board newBoard = new Board(this);
-        if (newBoard.squares[row][column].getOccupier().getValue() == 12) {
-            isFlagCaptured = true;
-        }
-        newBoard.squares[row][column].setOccupier(null);
-        
-        return newBoard;
-    }
+//    public Board clearSquare(int row, int column) {
+//        Board newBoard = new Board(this);
+//        if (newBoard.squares[row][column].getOccupier().getValue() == 12) {
+//            isFlagCaptured = true;
+//        }
+//        newBoard.squares[row][column].setOccupier(null);
+//        
+//        return newBoard;
+//    }
     
     public boolean isFlagCaptured() {
         return isFlagCaptured;

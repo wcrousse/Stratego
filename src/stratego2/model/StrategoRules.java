@@ -3,7 +3,6 @@
 package stratego2.model;
 
 import java.util.List;
-import stratego2.model.Player.AI.GameState;
 
 /**
  * contains the rules.
@@ -22,8 +21,8 @@ public class StrategoRules {
     public boolean isGameOver(GameState state) {
         boolean result = true;
         if (!state.isFlagCaptured()) {
-            List<Piece> army = state.getMovablePieces();
-            for (Piece piece : army) {
+            List<FriendlyPiece> army = state.getMovablePieces();
+            for (FriendlyPiece piece : army) {
                 if (hasMove(piece, state)) {
                     System.out.println(true);
                     return false;
@@ -41,7 +40,7 @@ public class StrategoRules {
      * @param piece the piece to be tested
      * @return true if the piece can move, false otherwise
      */
-    public boolean hasMove(Piece piece, GameState state) {
+    public boolean hasMove(FriendlyPiece piece, GameState state) {
         boolean result = false;
         if (isLegal(state, piece, piece.getRow() - 1, piece.getColumn())) {
             result = true;
@@ -65,7 +64,7 @@ public class StrategoRules {
      * @param row the row index of the destination square
      * @return true if the move is legal, false otherwise.
      */
-    public boolean isLegal(GameState state, Piece piece, int row, int column) {
+    public boolean isLegal(GameState state, FriendlyPiece piece, int row, int column) {
         boolean result = true;
         if (row >= Game.NUM_ROWS
                 || column >= Game.NUM_COLUMNS
@@ -122,7 +121,7 @@ public class StrategoRules {
     public boolean isLegal(GameState state, Move move) {
         Square startSquare;
         startSquare = state.getSquare(move.getStartRow(), move.getStartColumn());
-        Piece piece = startSquare.getOccupier();
+        FriendlyPiece piece = (FriendlyPiece)startSquare.getOccupier();
         return isLegal(state, piece, move.getDestinationRow(),
                 move.getDestinationColumn());
     }
@@ -179,7 +178,7 @@ public class StrategoRules {
      * occupied square
      * @return the winner 
      */
-    public Piece resolveAttack(GameState state, Piece defender, Piece attacker) {
+    public Piece resolveAttack(GameState state, FriendlyPiece defender, FriendlyPiece attacker) {
         Piece winner;
         //check if defender is a bomb
         if (defender.getRank() == Rank.BOMB) {

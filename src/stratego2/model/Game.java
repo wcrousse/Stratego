@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import stratego2.model.Player.AI.GameState;
 import stratego2.model.Player.HumanPlayer;
 import stratego2.model.Player.Player;
 
@@ -33,7 +32,7 @@ public class Game {
      * a data structure representing the current game layout
      */
     private GameState state;
-    private List<Piece> redArmy, blueArmy, redCaptured, blueCaptured;
+    private List<FriendlyPiece> redArmy, blueArmy, redCaptured, blueCaptured;
     private boolean isFlagCaptured;
     private final StrategoRules rules;
 
@@ -58,8 +57,8 @@ public class Game {
     }
     protected Color play() throws Exception {
         do {
-            for (Player p: players) p.displayBoard(state);
-            Move move = players[toMove].getMove(state);
+            for (Player p: players) p.displayBoard();//probably should change leave it for now
+            Move move = players[toMove].getMove();
             while (!rules.isLegal(state, move)) {               
                 try {
                     players[toMove].reportIllegalMove();
@@ -68,14 +67,14 @@ public class Game {
                             move.toString());
                     throw ex;
                 }
-                move = players[toMove].getMove(state);
+                move = players[toMove].getMove();
             }
             processMove(move);
             for (Player p: players) p.reportMove(move);
             
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
-        for (Player p: players) p.displayBoard(state);
+        for (Player p: players) p.displayBoard();
         return declareWinner();
     }
 
@@ -124,8 +123,8 @@ public class Game {
     protected boolean isGameOver() {
         boolean result = true;
         if (!isFlagCaptured) {  
-            List<Piece> army = (toMove != BLUE) ? blueArmy : redArmy;
-            for (Piece piece : army) {
+            List<FriendlyPiece> army = (toMove != BLUE) ? blueArmy : redArmy;
+            for (FriendlyPiece piece : army) {
                 if (hasMove(piece)) {
                     System.out.println(true);
                     return false;
@@ -143,7 +142,7 @@ public class Game {
      * @param piece the piece to be tested
      * @return true if the piece can move, false otherwise
      */
-    protected boolean hasMove(Piece piece) {
+    protected boolean hasMove(FriendlyPiece piece) {
         boolean result = false;
         if (rules.isLegal(state, piece, piece.getRow() - 1, piece.getColumn())) {
             result = true;
@@ -172,12 +171,13 @@ public class Game {
         Square destSquare = state.getSquare(destRow, destCol);
         int row = move.getStartRow();
         int column = move.getStartColumn();
-        Piece piece = state.getSquare(row, column).getOccupier();
-        piece = piece.setLocation(destRow, destCol);
+        FriendlyPiece piece = (FriendlyPiece)state.getSquare(row, column).getOccupier();
+        piece = (FriendlyPiece)piece.setLocation(destRow, destCol);
         if (destSquare.isOccupied()) {
-            Piece defender = state.getSquare(destRow, destCol).getOccupier();
+            FriendlyPiece defender = 
+                    (FriendlyPiece)state.getSquare(destRow, destCol).getOccupier();
             state = state.makeMove(move);
-            piece = piece.setLocation(destRow, destCol);
+            piece = (FriendlyPiece) piece.setLocation(destRow, destCol);
             Piece winner;
             winner = rules.resolveAttack(state, defender, piece);
             

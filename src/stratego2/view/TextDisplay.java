@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 import stratego2.model.Board;
 import stratego2.model.Color;
+import stratego2.model.FriendlyPiece;
 import stratego2.model.Game;
 import stratego2.model.Move;
 import stratego2.model.Piece;
@@ -137,7 +138,7 @@ public class TextDisplay implements Display {
                 if (square.isOccupied())   {
                     Piece piece = square.getOccupier();
                     if (piece.getColor() == color) {
-                        int value = piece.getValue();
+                        int value = ((FriendlyPiece)piece).getValue();
                         if (value < 0 || value > 9) {
                             System.out.print(value + " | ");
                         } else {

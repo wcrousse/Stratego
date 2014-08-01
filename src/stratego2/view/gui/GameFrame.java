@@ -17,12 +17,12 @@ import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.border.EtchedBorder;
 import stratego2.model.Board;
 import stratego2.model.FileParser;
+import stratego2.model.FriendlyPiece;
 import stratego2.model.Game;
 import stratego2.model.Move;
 import stratego2.model.Piece;
@@ -231,7 +231,7 @@ public class GameFrame extends JFrame implements Display {
         if (piece.getColor() != this.color) {
             int row = piece.getRow();
             int column = piece.getColumn();
-            int value = piece.getValue();
+            int value = ((FriendlyPiece)piece).getValue();
             GameSquare gs = squarePnls[row][column];
             new Thread() {
                 @Override

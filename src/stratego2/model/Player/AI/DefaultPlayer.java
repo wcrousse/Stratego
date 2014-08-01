@@ -7,9 +7,12 @@ import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
 import stratego2.model.FileParser;
+import stratego2.model.FriendlyPiece;
+import stratego2.model.GameState;
 import stratego2.model.Move;
 import stratego2.model.Piece;
 import stratego2.model.Rank;
+import stratego2.model.Square;
 import stratego2.model.StartPossitions;
 import stratego2.model.StrategoRules;
 
@@ -32,11 +35,10 @@ public class DefaultPlayer extends AIPlayer {
     }
 
     @Override
-    public Move getMove(Board board) {
-        GameState state = (GameState)board;
-        ArrayList<Action> possibleActions = super.generateSucessors(state);
+    public Move getMove() {
+        ArrayList<MCSTNode> possibleActions = super.generateSucessors(state);
         int moveIndex = (int)(Math.random()*possibleActions.size());
-        Action action = possibleActions.get(moveIndex);
+        MCSTNode action = possibleActions.get(moveIndex);
         return action.getMove();
     }
     
@@ -47,17 +49,17 @@ public class DefaultPlayer extends AIPlayer {
     }
 
     @Override
-    public List<Piece> getSetup() {
+    public List<FriendlyPiece> getSetup() {
         int[][] simpleLayout = startupFromFile(1);
         for (int i = 0; i < simpleLayout.length; i++) {
             for (int j = 0; j < simpleLayout[i].length; j++) {
                 int value = simpleLayout[i][j];
                 Rank rank = Rank.getRank(value);
-                Piece p;
+                FriendlyPiece p;
                 if (this.color == Color.BLUE) {
-                    p = new Piece(rank, color, i, j);
+                    p = new FriendlyPiece(color, i, j, rank);
                 } else {
-                    p = new Piece(rank, color, 9-i, 9-j);
+                    p = new FriendlyPiece(color, 9-i, 9-j, rank);
                 }
 
                 army.add(p);
@@ -104,6 +106,8 @@ public class DefaultPlayer extends AIPlayer {
 
     @Override
     public void reportMove(Move move) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Square start = state.getSquare(move.getStartRow(), move.getStartColumn());
+        Piece piece = start.getOccupier();
+        state.makeMove(move);
     }
 }

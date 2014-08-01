@@ -1,14 +1,19 @@
 package stratego2.model.Player;
 
-import stratego2.model.Player.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
 import stratego2.model.ControllerInterface;
+import stratego2.model.FriendlyPiece;
+import stratego2.model.Game;
+import stratego2.model.GameState;
+import stratego2.model.HumanEnemyPiece;
 import stratego2.model.Move;
 import stratego2.model.Piece;
+import stratego2.model.Player.AI.EnemyPiece;
+import stratego2.model.Player.Player;
 import stratego2.model.Rank;
 import stratego2.model.Square;
 import stratego2.view.Display;
@@ -18,17 +23,20 @@ import stratego2.view.gui.GameFrame;
  *
  * @author roussew
  */
-public class HumanPlayer implements Player{
+public class HumanPlayer implements Player {
 
-    private List<Piece> army;
+    private List<FriendlyPiece> army;
+    private List<HumanEnemyPiece> enemyArmy;
     private ControllerInterface controller;
     private Color color;
     private Display view;
+    private GameState state;
 
     public HumanPlayer(Color color, Display view) {
         this.color = color;
         this.view = view;
         army = new ArrayList<>();
+        enemyArmy = new ArrayList<>();
     }
 
     /**
@@ -46,13 +54,14 @@ public class HumanPlayer implements Player{
      * after the move is made.
      *
      */
-    public Move getMove(Board board) {
+    @Override
+    public Move getMove() {
         Move move = null;
-        view.displayBoard(board);
+        view.displayBoard(state);
         //if start square does not contain a piece
         do {
-            move = view.getMove(board);
-        } while (!board.getSquare(move.getStartRow(), move.getStartColumn()).isOccupied());
+            move = view.getMove(state);
+        } while (!state.getSquare(move.getStartRow(), move.getStartColumn()).isOccupied());
         return move;
     }
 
@@ -62,23 +71,47 @@ public class HumanPlayer implements Player{
      *
      * @return a list of Pieces having
      */
-    public List<Piece> getSetup() {
+    public List<FriendlyPiece> getSetup() {
         int[][] simpleLayout = view.getSetup();
         for (int i = 0; i < simpleLayout.length; i++) {
             for (int j = 0; j < simpleLayout[i].length; j++) {
                 int value = simpleLayout[i][j];
                 Rank rank = Rank.getRank(value);
-                Piece p;
+                FriendlyPiece p;
                 if (this.color == Color.BLUE) {
-                    p = new Piece(rank, color, i, j);
+                    p = new FriendlyPiece(color, i, j, rank);
                 } else {
-                    p = new Piece(rank, color, 9-i, 9-j);
+                    p = new FriendlyPiece(color, 9 - i, 9 - j, rank);
                 }
 
                 army.add(p);
             }
         }
+
+        initializeState();
         return army;
+    }
+
+    private void initializeState() {
+        List<? extends Piece> blueArmy, redArmy;
+        if (this.color == Color.BLUE) {
+            blueArmy = army;
+            redArmy = enemyArmy;
+        }else {
+            redArmy = army;
+            blueArmy = enemyArmy;
+        }
+        
+        for (int i = 0; i < Game.NUM_ROWS; i++) {
+            for (int j = 0; j < Game.NUM_COLUMNS; j++) {
+                if (this.color == Color.BLUE) {
+                    enemyArmy.add(new HumanEnemyPiece(Color.RED, i, j));
+                } else {
+                    enemyArmy.add(new HumanEnemyPiece(Color.BLUE, 9 - i, 9 - j));
+                }
+            }
+        }
+        state = new GameState(Color.RED, redArmy, blueArmy);
     }
 
     @Override
@@ -99,15 +132,14 @@ public class HumanPlayer implements Player{
     }
 
     @Override
-    public void displayBoard(Board board) {
-        view.displayBoard(board);
+    public void displayBoard() {
+        view.displayBoard(state);
     }
 
     void setDisplay(GameFrame gameFrame) {
         this.view = gameFrame;
     }
 
-    
     @Override
     public void reportResult(Color color) {
         view.displayResults(color);
@@ -115,6 +147,7 @@ public class HumanPlayer implements Player{
 
     @Override
     public void reportMove(Move move) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         state = state.makeMove(move);
     }
+
 }

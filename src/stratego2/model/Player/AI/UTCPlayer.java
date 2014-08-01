@@ -1,14 +1,18 @@
-
 package stratego2.model.Player.AI;
 
 import java.util.ArrayList;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
+import stratego2.model.FileParser;
+import stratego2.model.FriendlyPiece;
 import stratego2.model.Game;
+import stratego2.model.GameState;
 import stratego2.model.Move;
 import stratego2.model.Piece;
+import stratego2.model.Rank;
 import stratego2.model.Square;
+import stratego2.model.StartPossitions;
 import stratego2.model.StrategoRules;
 
 /**
@@ -16,9 +20,9 @@ import stratego2.model.StrategoRules;
  * @author roussew
  */
 public class UTCPlayer extends AIPlayer {
-     
-    private ArrayList<EnemyPiece> opposingArmy;
 
+    private MCSTNode actions;
+    private MCSTNode tree;
     public UTCPlayer(Color color) {
         this.color = color;
     }
@@ -28,10 +32,11 @@ public class UTCPlayer extends AIPlayer {
     }
 
     @Override
-    public Move getMove(Board board) {
-        state = new GameState(board, color);
-        ArrayList<Action> possibleActions = super.generateSucessors(state);
-        return null;
+    public Move getMove() {
+        actions.expand();
+        for(int i = 0; i < 5; i++) {
+            tree = getSampleState();
+        }
     }
 
     public void processMove(Move move) {
@@ -45,51 +50,65 @@ public class UTCPlayer extends AIPlayer {
     }
 
     @Override
-    public void displayBoard(Board board) {
-        Move lastMove = extractMove(board);
-        //updateBeliefState(move);
-    }
-
-    private Move extractMove(Board newState) {
-        for (int i = 0; i < Game.NUM_ROWS; i++) {
-            for (int j = 0; j < Game.NUM_COLUMNS; j++) {
-                Piece oldPiece = null, newPiece = null;
-                if (state.getSquare(i, j).isOccupied())  {
-                    oldPiece = state.getSquare(i, j).getOccupier();
-                if (newState.getSquare(i, j).isOccupied()) {
-                    newPiece = newState.getSquare(i, j).getOccupier();
-                }
-                if (oldPiece != null || newPiece != null) {
-                    if ((oldPiece != null && newPiece == null)
-                            || (oldPiece == null && newPiece != null) 
-                            || (!oldPiece.equals(newPiece))) {
-                        
-                    }
-                    
-                }
-                if (!oldPiece.equals(newPiece) )
-                    if (newState.getSquare(i, j).isOccupied()) {
-                        Piece piece2 = newState.getSquare(i, j).getOccupier();
-                        if (!oldPiece.equals(piece2)) {
-                            // 
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    
     public void reportMove(Move move) {
         Square start = state.getSquare(move.getStartRow(), move.getStartColumn());
-            Piece piece = start.getOccupier();
-            state.makeMove(move);
+        Piece piece = start.getOccupier();
+        state.makeMove(move);
     }
 
+    /**
+     * stochastically selects a starting position. Currently a bit rough. 
+     * ultimately we need to determine some limited number of starting position
+     * features, and select them with a probability relative to their determined 
+     * strengths, and randomize the remaining peaces. 
+     * @return 
+     */
     @Override
-    public List<Piece> getSetup() {
-        return null;
+    public List<FriendlyPiece> getSetup() {
+        int[][] simpleLayout = startupFromFile(1);
+        for (int i = 0; i < simpleLayout.length; i++) {
+            for (int j = 0; j < simpleLayout[i].length; j++) {
+                int value = simpleLayout[i][j];
+                Rank rank = Rank.getRank(value);
+                FriendlyPiece p;
+                if (this.color == Color.BLUE) {
+                    p = new FriendlyPiece(color, i, j, rank);
+                } else {
+                    p = new FriendlyPiece(color, 9-i, 9-j, rank);
+                }
 
+                army.add(p);
+            }
+        }
+        return army;
+    }
+    
+    private int[][] startupFromFile(int setUpNum) {
+        
+        FileParser parser = new FileParser();
+            String fileName;
+            switch (setUpNum) {
+                case 0:
+                    fileName = StartPossitions.FLAG_LEFT1.fileName();
+                    break;
+                case 1:
+                    fileName = StartPossitions.FLAG_RIGHT1.fileName();
+                    break;
+                case 2:
+                    fileName = StartPossitions.FLAG_MIDDLE.fileName();
+                    break;
+                case 3:
+                    fileName = StartPossitions.FLAG_LEFT2.fileName();
+                    break;
+                case 4:
+                    fileName = StartPossitions.FLAG_RIGHT2.fileName();
+                    break;
+                default:
+                    //appease the compiler
+                    fileName = null;
+            }
+
+            return parser.readPositionFile(fileName);
     }
 
     @Override
@@ -98,13 +117,20 @@ public class UTCPlayer extends AIPlayer {
     }
 
     @Override
-    public void revealSquare(Square square) {
-        Piece winner = 
+    public void revealSquare(Square square) { 
+        FriendlyPiece winner = (FriendlyPiece)square.getOccupier();
+        if (winner.getColor() == color) {
+            state.placePiece(winner.getRow(), winner.getColumn(), winner);
+        } else {
+            square = state.getSquare(winner.getRow(), winner.getColumn());
+            EnemyPiece ep = (EnemyPiece)square.getOccupier();
+            ep.pieceRevealed(winner.getRank());
+        }
     }
 
     @Override
     public void reportResult(Color color) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //do nothing for now
     }
 
     class Location {
@@ -138,14 +164,5 @@ public class UTCPlayer extends AIPlayer {
             return true;
         }
 
-    }
-
-    class EnemyPiece extends Piece{
-
-        ProbabilityDistribution distribution;
-   
-        public EnemyPiece(Piece original) {
-            super(original);
-        }
     }
 }

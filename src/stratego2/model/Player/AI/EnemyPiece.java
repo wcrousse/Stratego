@@ -6,22 +6,17 @@ import stratego2.model.Color;
 import stratego2.model.Piece;
 import stratego2.model.Rank;
 
-/**
- *
+/** 
+ * class is not quite immutable. ProbabilityDistribution is a mutable class.
  * @author roussew
  */
 public class EnemyPiece extends Piece{
     
-    private ProbabilityDistribution distribution;
-    
-    public EnemyPiece(int row, int column, Color color) {
-        super(null, color, row, column);
-    }
+    private final ProbabilityDistribution distribution;
 
     EnemyPiece(ProbabilityDistribution distribution, 
-            Color color, int row, int column) {
-            
-        super(null, color, row, column);
+            Color color, int row, int column) {            
+        super(color, row, column);
         this.distribution = distribution;
     }
     
@@ -53,6 +48,16 @@ public class EnemyPiece extends Piece{
                 distribution.setProb(r, 0);
             }
         }
+    }
+
+    @Override
+    public Piece setLocation(int row, int column) {
+        return new EnemyPiece(distribution, getColor(), row, column);
+    }
+
+    @Override
+    public Piece copy() {
+        return new EnemyPiece(distribution, getColor(), getRow(), getColumn());
     }
     
 }

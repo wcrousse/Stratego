@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import stratego2.model.Color;
+import stratego2.model.FriendlyPiece;
 import stratego2.model.Piece;
 
 /**
@@ -96,7 +97,9 @@ public class GameSquare extends javax.swing.JPanel {
      */
     void setPiece(Piece occupier) {
         String labelText
-                = (occupier.getColor() == color) ? occupier.getValue() + "" : "----";
+                = (occupier instanceof FriendlyPiece) ? 
+                ((FriendlyPiece)occupier).getValue() + "" : 
+                "----";
         lblPiece.setText("<html><center>" + labelText + "<br>----</html>");
         lblPiece.setSize(40, 40);
         lblPiece.setFont(new Font("Georgia", Font.BOLD, 24));

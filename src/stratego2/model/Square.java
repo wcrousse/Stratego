@@ -39,7 +39,7 @@ public class Square {
      */
     public Square copy() {
         if (isOccupied()) {
-            return new Square(new Piece(occupier));
+            return new Square(occupier.copy());
         }
         return new Square(isActive);
     }
@@ -59,7 +59,7 @@ public class Square {
      * @return a copy of the occupying piece
      */
     public Piece getOccupier() {
-        return new Piece(occupier);
+        return occupier.copy();
     }
 
     public boolean isActive() {

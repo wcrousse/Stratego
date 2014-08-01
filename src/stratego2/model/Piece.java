@@ -8,20 +8,19 @@ import java.util.Objects;
  * immutable.
  * @author roussew
  */
-public class Piece {
+public abstract class Piece {
     private final int  row, column;
-    private final Rank rank;
+//    private final Rank rank;
     private final Color color;
     
-    public Piece(Rank rank, Color color, int row, int column) {
-        this.rank = rank;
+    public Piece(Color color, int row, int column) {
         this.color = color;
         this.row = row;
         this.column = column;
     }
     
     public Piece(Piece original) {
-        this(original.getRank(), original.getColor(),
+        this(original.getColor(),
                 original.getRow(), original.getColumn());
     }
     
@@ -38,28 +37,19 @@ public class Piece {
      * has the location give.
      * @param row the row index of the piece
      * @param column the column index of the piece.
+     * @return Piece a new piece with new rows and columns
      */
-    public Piece setLocation(int row, int column) {
-        Piece newPiece = new Piece(this.rank, this.color, row, column);
-        return newPiece;
-    }
+    public abstract Piece setLocation(int row, int column);
 
     public Color getColor() {
         return color;
     }
-
-    public Rank getRank() {
-        return rank;
-    }
-
-    public int getValue() {
-        return rank.getValue();
-    }
+    
     @Override
     public String toString() {
         if(color == Color.BLUE) {
-            return "b" + ", " + rank.getValue()+ " x="+row + ", y="+column + " ";
-        }else return "r"+", "+rank.getValue() + " x="+row + ", y="+column + " ";
+            return "b" + ",  x="+row + ", y="+column + " ";
+        }else return "r"+", x="+row + ", y="+column + " ";
      
     }
 
@@ -68,7 +58,6 @@ public class Piece {
         int hash = 5;
         hash = 53 * hash + this.row;
         hash = 53 * hash + this.column;
-        hash = 53 * hash + Objects.hashCode(this.rank);
         hash = 53 * hash + Objects.hashCode(this.color);
         return hash;
     }
@@ -88,15 +77,13 @@ public class Piece {
         if (this.column != other.column) {
             return false;
         }
-        if (this.rank != other.rank) {
-            return false;
-        }
+
         if (this.color != other.color) {
             return false;
         }
         return true;
     }
-    
-    
 
+    public abstract Piece copy();
+    
 }
