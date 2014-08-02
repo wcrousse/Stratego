@@ -49,6 +49,10 @@ public class EnemyPiece extends Piece{
             }
         }
     }
+    
+    public ProbabilityDistribution getDistribution() {
+        return distribution;
+    }
 
     @Override
     public Piece setLocation(int row, int column) {

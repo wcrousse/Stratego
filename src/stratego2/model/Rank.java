@@ -5,17 +5,24 @@ package stratego2.model;
  * @author roussew
  */
 public enum Rank {
-    MARSHAL(10), GENERAL(9), COLONEL(8), MAJOR(7), CAPTAIN(6), LIEUTENANT(5),
-    SERGEANT(4), MINER(3), SCOUT(2), SPY(1), BOMB(11), FLAG(12);
+    MARSHAL(10, 1), GENERAL(9, 1), COLONEL(8, 2), MAJOR(7, 3), CAPTAIN(6, 4), 
+    LIEUTENANT(5, 4),  SERGEANT(4, 4), MINER(3, 5), SCOUT(2, 8), SPY(1, 1), 
+    BOMB(11, 6), FLAG(12, 1);
     
     private final int value;
+    private final int count;
     
-    Rank(int value) {
+    Rank(int value, int count) {
         this.value = value;
+        this.count = count;
     }
 
     public int getValue() {
         return value;
+    }
+    
+    public int getCount() {
+        return count;
     }
     
     /**

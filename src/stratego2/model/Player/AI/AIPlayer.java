@@ -22,7 +22,7 @@ import stratego2.model.StrategoRules;
  */
 public abstract class AIPlayer implements Player {
     Color color;
-    private final static StrategoRules rules = new StrategoRules();
+    protected final static StrategoRules rules = new StrategoRules();
     protected GameState state;
     protected ArrayList<MCSTNode> availableMoves;
     protected StrategoRules gameLogic;

@@ -24,7 +24,7 @@ public class Simulator extends Game implements Runnable{
     @Override
     public void run() {
         try {
-            super.startGame();
+            winColor = super.play();
         } catch (Exception ex) {
             Logger.getLogger(Simulator.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -36,9 +36,8 @@ public class Simulator extends Game implements Runnable{
         return winColor;
     }
 
-    public Color getWinColor() {
+    public Color getResult() {
         return winColor;
-    }
-    
+    }    
     
 }

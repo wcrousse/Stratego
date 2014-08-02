@@ -2,6 +2,7 @@
 
 package stratego2.model.Player.AI;
 
+import java.util.ArrayList;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Game;
@@ -18,6 +19,9 @@ public class MCSTNode {
      * the game state
      */
     private final GameState state;
+
+    private MCSTNode parent;
+    
     /**
      * representation of the move made.
      */
@@ -31,13 +35,17 @@ public class MCSTNode {
      */
     private double utility;
     /**
+     * the average return of simulations going through this node;
+     */
+    private double qvalue;
+    /**
      * keeps track of the number of times this move/state pair has been executed.
      */
     private int count;
     
-    private List<MCSTNode>children;
+    private boolean isLeaf;
     
-    private MCSTNode parent;
+    private ArrayList<MCSTNode>children;
     
     public MCSTNode(GameState state, Move move){
         this.state = state;
@@ -55,6 +63,38 @@ public class MCSTNode {
         move = null;
     }
     
+    public boolean isLeaf() {
+        return isLeaf;
+    }
+    
+    public ArrayList<MCSTNode> getChildren() {
+        return children;
+    }
+    
+    public MCSTNode getParent() {
+        return parent;
+    }
+
+    public double getQvalue() {
+        return qvalue;
+    }
+
+    public void updateQValue(double result) {
+        sum += result;
+        qvalue = sum / count;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+   public void incrementCount() {
+       count++;
+   }
+   
+   public boolean isRoot() {
+       return (parent != null);
+   }
     
     /**
      * updates the utility score of this action.
@@ -78,6 +118,9 @@ public class MCSTNode {
     public void expand() {
         if (children != null) return;
         children = AIPlayer.generateSucessors(state);
+        for (MCSTNode child: children) {
+            child.parent = this;
+        }
     }
  
 }
