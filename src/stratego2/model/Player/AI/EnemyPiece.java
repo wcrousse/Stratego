@@ -63,5 +63,10 @@ public class EnemyPiece extends Piece{
     public Piece copy() {
         return new EnemyPiece(distribution, getColor(), getRow(), getColumn());
     }
+
+    @Override
+    public String toString() {
+        return "EnemyPiece{" + super.getColor() + "\n{" + distribution + '}';
+    }
     
 }
