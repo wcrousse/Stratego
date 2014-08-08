@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import stratego2.model.Board;
 import stratego2.model.Color;
+import stratego2.model.FileParser;
 import stratego2.model.FriendlyPiece;
 import stratego2.model.Game;
 import stratego2.model.GameState;
@@ -14,6 +15,7 @@ import stratego2.model.Piece;
 import stratego2.model.Player.Player;
 import stratego2.model.Rank;
 import stratego2.model.Square;
+import stratego2.model.StartPossitions;
 import stratego2.model.StrategoRules;
 
 /**
@@ -131,5 +133,58 @@ public abstract class AIPlayer implements Player {
         System.out.println("winner = " + color.toString());
     }
 
+    /**
+     * stochastically selects a starting position. Currently a bit rough. 
+     * ultimately we need to determine some limited number of starting position
+     * features, and select them with a probability relative to their determined 
+     * strengths, and randomize the remaining pieces. 
+     * @return 
+     */
+    @Override
+    public List<FriendlyPiece> getSetup() {
+        int[][] simpleLayout = startupFromFile(1);
+        for (int i = 0; i < simpleLayout.length; i++) {
+            for (int j = 0; j < simpleLayout[i].length; j++) {
+                int value = simpleLayout[i][j];
+                Rank rank = Rank.getRank(value);
+                FriendlyPiece p;
+                if (this.color == Color.BLUE) {
+                    p = new FriendlyPiece(color, i, j, rank);
+                } else {
+                    p = new FriendlyPiece(color, 9-i, 9-j, rank);
+                }
+
+                army.add(p);
+            }
+        }
+        return army;
+    }
     
+    private int[][] startupFromFile(int setUpNum) {
+        
+        FileParser parser = new FileParser();
+            String fileName;
+            switch (setUpNum) {
+                case 0:
+                    fileName = StartPossitions.FLAG_LEFT1.fileName();
+                    break;
+                case 1:
+                    fileName = StartPossitions.FLAG_RIGHT1.fileName();
+                    break;
+                case 2:
+                    fileName = StartPossitions.FLAG_MIDDLE.fileName();
+                    break;
+                case 3:
+                    fileName = StartPossitions.FLAG_LEFT2.fileName();
+                    break;
+                case 4:
+                    fileName = StartPossitions.FLAG_RIGHT2.fileName();
+                    break;
+                default:
+                    //appease the compiler
+                    fileName = null;
+            }
+
+            return parser.readPositionFile(fileName);
+    }
 }

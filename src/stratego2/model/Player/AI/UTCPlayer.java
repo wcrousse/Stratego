@@ -184,60 +184,8 @@ public class UTCPlayer extends AIPlayer {
         state.makeMove(move);
     }
 
-    /**
-     * stochastically selects a starting position. Currently a bit rough. 
-     * ultimately we need to determine some limited number of starting position
-     * features, and select them with a probability relative to their determined 
-     * strengths, and randomize the remaining pieces. 
-     * @return 
-     */
-    @Override
-    public List<FriendlyPiece> getSetup() {
-        int[][] simpleLayout = startupFromFile(1);
-        for (int i = 0; i < simpleLayout.length; i++) {
-            for (int j = 0; j < simpleLayout[i].length; j++) {
-                int value = simpleLayout[i][j];
-                Rank rank = Rank.getRank(value);
-                FriendlyPiece p;
-                if (this.color == Color.BLUE) {
-                    p = new FriendlyPiece(color, i, j, rank);
-                } else {
-                    p = new FriendlyPiece(color, 9-i, 9-j, rank);
-                }
-
-                army.add(p);
-            }
-        }
-        return army;
-    }
     
-    private int[][] startupFromFile(int setUpNum) {
-        
-        FileParser parser = new FileParser();
-            String fileName;
-            switch (setUpNum) {
-                case 0:
-                    fileName = StartPossitions.FLAG_LEFT1.fileName();
-                    break;
-                case 1:
-                    fileName = StartPossitions.FLAG_RIGHT1.fileName();
-                    break;
-                case 2:
-                    fileName = StartPossitions.FLAG_MIDDLE.fileName();
-                    break;
-                case 3:
-                    fileName = StartPossitions.FLAG_LEFT2.fileName();
-                    break;
-                case 4:
-                    fileName = StartPossitions.FLAG_RIGHT2.fileName();
-                    break;
-                default:
-                    //appease the compiler
-                    fileName = null;
-            }
-
-            return parser.readPositionFile(fileName);
-    }
+    
 
     @Override
     public Color getColor() {

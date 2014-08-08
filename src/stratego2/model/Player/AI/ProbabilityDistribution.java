@@ -179,4 +179,10 @@ class ProbabilityDistribution {
             default: return 0; //because we're all just slaves to the compiler
         }
     }
+
+    @Override
+    public String toString() {
+        return "ProbabilityDistribution{" + "marshalProb=" + marshalProb + ", generalProb=" + generalProb + ", colonelProb=" + colonelProb + ", majorProb=" + majorProb + ", captainProb=" + captainProb + ", leiutenantProb=" + leiutenantProb + ", sergeantProb=" + sergeantProb + ", minerProb=" + minerProb + ", scoutProb=" + scoutProb + ", spyProb=" + spyProb + ", bombProb=" + bombProb + ", flagProb=" + flagProb + '}';
+    }
+    
 }

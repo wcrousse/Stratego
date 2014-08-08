@@ -102,12 +102,12 @@ public class HumanPlayer implements Player {
             blueArmy = enemyArmy;
         }
         
-        for (int i = 0; i < Game.NUM_ROWS; i++) {
+        for (int i = 0; i < 4; i++) {
             for (int j = 0; j < Game.NUM_COLUMNS; j++) {
                 if (this.color == Color.BLUE) {
-                    enemyArmy.add(new HumanEnemyPiece(Color.RED, i, j));
+                    enemyArmy.add(new HumanEnemyPiece(Color.RED, 9 - i, 9 - j));
                 } else {
-                    enemyArmy.add(new HumanEnemyPiece(Color.BLUE, 9 - i, 9 - j));
+                    enemyArmy.add(new HumanEnemyPiece(Color.BLUE, i, j));
                 }
             }
         }

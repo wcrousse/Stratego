@@ -38,7 +38,7 @@ public class Game {
 
     public Game() {
         players = new Player[2];
-        state = new GameState();
+
         redCaptured = new ArrayList<>();
         blueCaptured = new ArrayList<>();
         rules = new StrategoRules();
@@ -51,7 +51,8 @@ public class Game {
     public void startGame() throws Exception {
         setupBoard();
         //players[1].setDisplay(new GameFrame(players[1].getColor()));
-        toMove = RED;
+        toMove = BLUE;
+        state = new GameState(Color.BLUE, blueArmy, redArmy);
         Color winner = play();
         for (Player p: players) p.reportResult(winner);
     }
@@ -93,14 +94,14 @@ public class Game {
             Thread t1 = new Thread() {
                 @Override
                 public void run() {
-                    blueArmy = players[0].getSetup();
+                    blueArmy = players[BLUE].getSetup();
                 }
             };
             
             Thread t2 = new Thread() {
                 @Override
                 public void run() {
-                    redArmy = players[1].getSetup();
+                    redArmy = players[RED].getSetup();
                 }
             };
             t1.start();
@@ -122,8 +123,10 @@ public class Game {
      */
     protected boolean isGameOver() {
         boolean result = true;
-        if (!isFlagCaptured) {  
-            List<FriendlyPiece> army = (toMove != BLUE) ? blueArmy : redArmy;
+        if (!isFlagCaptured) { 
+            String movestr = (toMove == BLUE)? "blue": "red";
+            System.out.println("to move = " + movestr + state.getToMove());
+            List<FriendlyPiece> army = (toMove == BLUE) ? blueArmy : redArmy;
             for (FriendlyPiece piece : army) {
                 if (hasMove(piece)) {
                     System.out.println(true);

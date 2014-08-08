@@ -24,8 +24,8 @@ public class GameState extends Board {
      */
     private final Color toMove;
 
-    public GameState( Color toMove, List<? extends Piece> redArmy,
-            List<? extends Piece> blueArmy ) {
+    public GameState( Color toMove, List<? extends Piece> blueArmy,
+            List<? extends Piece> redArmy ) {
         super(redArmy, blueArmy);
         this.toMove = toMove;
         this.redArmy = redArmy;
@@ -35,13 +35,13 @@ public class GameState extends Board {
     public GameState( Board board, Color playerColor ) {
         super( board );
         this.playerColor = playerColor;
-        toMove = Color.RED;
+        toMove = playerColor;
     }
 
     public GameState() {
         blueArmy = new ArrayList<>();
         redArmy = new ArrayList<>();
-        toMove = Color.RED;
+        toMove = Color.BLUE;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class GameState extends Board {
                 if ( square.isOccupied() && 
                         square.getOccupier() instanceof FriendlyPiece) {
                     FriendlyPiece p = (FriendlyPiece)square.getOccupier();
-                    if (p.getColor() == toMove && p instanceof FriendlyPiece
+                    if (p instanceof FriendlyPiece
                             && ((FriendlyPiece) p).getRank() != Rank.BOMB
                             && ((FriendlyPiece) p).getRank() != Rank.FLAG) {
 
