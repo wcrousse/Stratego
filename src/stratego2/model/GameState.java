@@ -13,6 +13,7 @@ import java.util.Objects;
  * @author roussew
  */
 public class GameState extends Board {
+
     private Color playerColor;
     private List<? extends Piece> blueArmy;
     private List<? extends Piece> redArmy;
@@ -24,16 +25,16 @@ public class GameState extends Board {
      */
     private final Color toMove;
 
-    public GameState( Color toMove, List<? extends Piece> blueArmy,
-            List<? extends Piece> redArmy ) {
+    public GameState(Color toMove, List<? extends Piece> blueArmy,
+            List<? extends Piece> redArmy) {
         super(redArmy, blueArmy);
         this.toMove = toMove;
         this.redArmy = redArmy;
         this.blueArmy = blueArmy;
     }
 
-    public GameState( Board board, Color playerColor ) {
-        super( board );
+    public GameState(Board board, Color playerColor) {
+        super(board);
         this.playerColor = playerColor;
         toMove = playerColor;
     }
@@ -45,26 +46,26 @@ public class GameState extends Board {
     }
 
     @Override
-    public GameState placePiece( int row, int column, Piece piece ) {
-        GameState newBoard = new GameState( this, this.toMove );
+    public GameState placePiece(int row, int column, Piece piece) {
+        GameState newBoard = new GameState(this, this.toMove);
         Square square = newBoard.squares[row][column];
-        if ( square.isActive() ) {
-            square.setOccupier( piece );
+        if (square.isActive()) {
+            square.setOccupier(piece);
         }
         return newBoard;
     }
 
-    public GameState clearSquare( int row, int column ) {
-        GameState newBoard = new GameState( this, this.toMove );
+    public GameState clearSquare(int row, int column) {
+        GameState newBoard = new GameState(this, this.toMove);
         Square square = newBoard.squares[row][column];
-        square.setOccupier( null );
+        square.setOccupier(null);
         return newBoard;
     }
 
 //    @Override
-    public GameState makeMove( Move move ) {
-        Color nextColor = ( toMove == Color.RED ) ? Color.BLUE : Color.RED;
-        GameState board = new GameState( this, nextColor );
+    public GameState makeMove(Move move) {
+        Color nextColor = (toMove == Color.RED) ? Color.BLUE : Color.RED;
+        GameState board = new GameState(this, nextColor);
         int startRow = move.getStartRow();
         int startColumn = move.getStartColumn();
         int destinationRow = move.getDestinationRow();
@@ -72,13 +73,11 @@ public class GameState extends Board {
         Square startSquare = board.squares[startRow][startColumn];
         Square destination = board.squares[destinationRow][destinationColumn];
         Piece piece = startSquare.getOccupier();
-        startSquare.setOccupier( null );
+        startSquare.setOccupier(null);
         piece = piece.setLocation(destinationRow, destinationColumn);
-        destination.setOccupier( piece );
+        destination.setOccupier(piece);
         return board;
     }
-    
-    
 
     /**
      * returns a list of the movable pieces that belong to the player whose turn
@@ -89,12 +88,12 @@ public class GameState extends Board {
      */
     public ArrayList<FriendlyPiece> getMovablePieces() {
         ArrayList<FriendlyPiece> movablePieces = new ArrayList<>();
-        for ( int i = 0; i < squares.length; i++ ) {
-            for ( int j = 0; j < squares[i].length; j++ ) {
+        for (int i = 0; i < squares.length; i++) {
+            for (int j = 0; j < squares[i].length; j++) {
                 Square square = squares[i][j];
-                if ( square.isOccupied() && 
-                        square.getOccupier() instanceof FriendlyPiece) {
-                    FriendlyPiece p = (FriendlyPiece)square.getOccupier();
+                if (square.isOccupied()
+                        && square.getOccupier() instanceof FriendlyPiece) {
+                    FriendlyPiece p = (FriendlyPiece) square.getOccupier();
                     if (p instanceof FriendlyPiece
                             && ((FriendlyPiece) p).getRank() != Rank.BOMB
                             && ((FriendlyPiece) p).getRank() != Rank.FLAG) {
@@ -116,8 +115,6 @@ public class GameState extends Board {
         return toMove;
     }
 
-
-
     @Override
     public int hashCode() {
         int hash = 5;
@@ -126,22 +123,22 @@ public class GameState extends Board {
     }
 
     @Override
-    public boolean equals(Object obj ) {
+    public boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
-        if ( getClass() != obj.getClass() ) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-        final GameState other = ( GameState ) obj;
-        if ( this.toMove != other.toMove ) {
+        final GameState other = (GameState) obj;
+        if (this.toMove != other.toMove) {
             return false;
         }
 
-        return areBoardsEqual( other.squares );
+        return areBoardsEqual(other.squares);
     }
 
-    private boolean areBoardsEqual( Square[][] others ) {
+    private boolean areBoardsEqual(Square[][] others) {
         for (int i = 0; i < squares.length; i++) {
             for (int j = 0; j < squares[i].length; j++) {
                 if (!squares[i][j].equals(others[i][j])) {
@@ -158,6 +155,30 @@ public class GameState extends Board {
 
     public void setUtility(double utility) {
         this.utility = utility;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Game.NUM_ROWS; i++) {
+            for (Square s : this.squares[i]) {
+                sb.append('|');
+                if (!s.isActive()) {
+                    sb.append("  -  ");
+                } else if (s.isOccupied()) {
+                    FriendlyPiece p = (FriendlyPiece)s.getOccupier();
+                    char col = (p.getColor() == Color.BLUE)? 'B': 'R';
+                    int ran = (p.getRank().getValue());
+                    String ranstr;
+                    if(ran<10) ranstr = "0"+ran;
+                    else ranstr = ""+ran;
+                    sb.append(col + ", " + ranstr);
+                } else {
+                    sb.append("     ");
+                }
+            }
+            sb.append("|\n");
+        }
+        return sb.toString();
     }
 
 }

@@ -48,23 +48,26 @@ public class MCSTNode {
     private ArrayList<MCSTNode>children;
     
     public MCSTNode(GameState state, Move move){
+        children = new ArrayList<>();
         this.state = state;
         this.move = move;
     }
     
     public MCSTNode(GameState root) {
+        children = new ArrayList<>();
         state = root;
         move = null;
     }
     
     public MCSTNode(GameState state, MCSTNode parent) {
+        children = new ArrayList<>();
         this.state = state;
         this.parent = parent;
         move = null;
     }
     
     public boolean isLeaf() {
-        return isLeaf;
+        return children.isEmpty();
     }
     
     public ArrayList<MCSTNode> getChildren() {

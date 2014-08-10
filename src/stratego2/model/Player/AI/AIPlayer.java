@@ -30,6 +30,7 @@ public abstract class AIPlayer implements Player {
     protected StrategoRules gameLogic;
     protected ArrayList<FriendlyPiece> army;
     protected Move lastMove;
+
     
     public AIPlayer() {
         availableMoves = new ArrayList<>();
@@ -87,8 +88,7 @@ public abstract class AIPlayer implements Player {
             moves[3] = new Move(startRow, startColumn, startRow+1, startColumn);
             
             for(Move move: moves) {
-                if (rules.isLegal(state, piece, move.getDestinationRow(),
-                        move.getDestinationColumn())) {
+                if (rules.isLegal(state, move)) {
                     possibleActions.add(new MCSTNode(state, move));
                 }
             }
@@ -101,16 +101,33 @@ public abstract class AIPlayer implements Player {
         int startColumn = piece.getColumn();
         ArrayList<MCSTNode> scoutActions = new ArrayList<>();
         for (int i=0; i<Game.NUM_ROWS; i++) {
-            if (rules.isLegal(state, piece, i, startColumn)) {
-                Move move = new Move(startRow, startColumn, i, startColumn);
+            Move move = new Move(startRow, startColumn, i, startColumn);
+            if (rules.isLegal(state, move)) {
                 scoutActions.add(new MCSTNode(state, move));
             }
-            if (rules.isLegal(state, piece, startRow, i)) {
-                Move move = new Move(startRow, startColumn, startRow, i);
+            move = new Move(startRow, startColumn, startRow, i);
+            if (rules.isLegal(state, move)) {
                 scoutActions.add(new MCSTNode(state, move));
             }
         }
         return scoutActions;
+    }
+    
+    @Override
+    public void reportMove(Move move) {
+        int startR, startC, endR, endC;
+        startR = move.getStartRow();
+        startC = move.getStartColumn();
+        endR = move.getDestinationRow();
+        endC = move.getDestinationColumn();
+        
+        if(state.getSquare(endR, endC).isOccupied()) {
+            System.out.println("before move \n" + state);
+            state = state.makeMove(move);
+            System.out.println("after move \n" + state);
+        } else {
+            state = state.makeMove(move);
+        }
     }
 
     /**
@@ -119,12 +136,18 @@ public abstract class AIPlayer implements Player {
      */
     @Override
     public void reportIllegalMove() throws Exception{
-        throw new Exception("AI made illegal move" + lastMove.toString());
+        System.out.println(state);
+        throw new Exception("AI made illegal move" );
     }
 
     @Override
     public void revealSquare(Square square) {
-        System.out.println(square);
+        Piece p = square.getOccupier();
+        int row = p.getRow();
+        int column = p.getColumn();
+        state = state.placePiece(row, column, p);
+        System.out.println("AI \nWinner= "+p);
+        System.out.println(this.state);
     }
 
     @Override

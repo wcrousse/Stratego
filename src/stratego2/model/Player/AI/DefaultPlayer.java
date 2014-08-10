@@ -27,12 +27,14 @@ public class DefaultPlayer extends AIPlayer {
     }
     
     public DefaultPlayer(Color color, StrategoRules rules, GameState startState) {
-        this(color, rules);
+        super(color, rules);
         this.startState = startState;
+        this.state = startState;
     }
 
     @Override
     public Move getMove() {
+        System.out.println(state);
         ArrayList<MCSTNode> possibleActions = AIPlayer.generateSucessors(state);
         int moveIndex = (int)(Math.random()*possibleActions.size());
         MCSTNode action = possibleActions.get(moveIndex);
@@ -69,6 +71,7 @@ public class DefaultPlayer extends AIPlayer {
             blueArmy = enemyArmy;
         }
         state = new GameState(Color.BLUE, blueArmy, redArmy);
+        startState = state;
         return friendlyArmy;
     }
     /**
@@ -78,11 +81,17 @@ public class DefaultPlayer extends AIPlayer {
     public double getStartStateUtility() {
         return startState.getUtility();
     }
-
-    @Override
-    public void reportMove(Move move) {
-        Square start = state.getSquare(move.getStartRow(), move.getStartColumn());
-        Piece piece = start.getOccupier();
-        state = state.makeMove(move);
-    }
+    
+//    @Override
+//    public void revealSquare(Square square) {
+//        System.out.println("AI \n"+state);
+////        Piece winner = square.getOccupier();
+////        if(winner.getColor() != color) {
+////            Color enemyColor = (this.color == Color.BLUE)? Color.RED: Color.BLUE;
+////            state = state.placePiece(winner.getRow(), winner.getColumn(),
+////                    new HumanEnemyPiece(enemyColor, winner.getRow(), winner.getColumn()));
+////        } else {
+////            state = state.placePiece(winner.getRow(), winner.getColumn(), winner);
+////        }
+//    }
 }

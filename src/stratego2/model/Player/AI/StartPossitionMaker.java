@@ -24,15 +24,15 @@ public class StartPossitionMaker {
         this.enemyColor = enemyColor;
     }
 
-    private ArrayList<EnemyPiece> getBeliefState() {
+    public ArrayList<EnemyPiece> getBeliefState() {
         ArrayList<EnemyPiece> army = new ArrayList<>();
         try {
             scanner = new Scanner(new BufferedReader(new FileReader("results.txt")));
 
             setScannerStart();
             int c = 0;
-            for (int i = 0; i < Game.NUM_ROWS; i++) {
-                for (int j = 0; j < 4; j++) {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < Game.NUM_COLUMNS; j++) {
                     System.out.println(i*10+j);
                     EnemyPiece p = createPiece(i, j);
                     army.add(p);

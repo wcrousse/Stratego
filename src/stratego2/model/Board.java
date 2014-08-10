@@ -181,14 +181,20 @@ public class Board implements Iterable<Square> {
             private int i =0,  j = 0;
             @Override
             public boolean hasNext() {
-                return (i < squares.length || j < squares.length);
+                return (i < squares.length);
             }
             @Override
             public Object next() {
-                if(j < squares.length - 1) j++;
-                else if (i < squares.length - 1)i++;
-                else throw new NoSuchElementException();
-                return getSquare(i, j);
+                Square nextSquare;
+                if (!hasNext()) throw new NoSuchElementException();
+                nextSquare = getSquare(i, j);
+                if(j < squares[i].length - 1) j++;
+                else {
+                    i++;
+                    j = 0;
+                }
+                
+                return nextSquare;
             }           
         };
     }

@@ -1,9 +1,7 @@
 package stratego2.model.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import stratego2.model.Board;
 import stratego2.model.Color;
 import stratego2.model.ControllerInterface;
 import stratego2.model.FriendlyPiece;
@@ -12,7 +10,6 @@ import stratego2.model.GameState;
 import stratego2.model.HumanEnemyPiece;
 import stratego2.model.Move;
 import stratego2.model.Piece;
-import stratego2.model.Player.AI.EnemyPiece;
 import stratego2.model.Player.Player;
 import stratego2.model.Rank;
 import stratego2.model.Square;

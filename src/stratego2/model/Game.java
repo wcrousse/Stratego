@@ -32,7 +32,7 @@ public class Game {
      * a data structure representing the current game layout
      */
     private GameState state;
-    private List<FriendlyPiece> redArmy, blueArmy, redCaptured, blueCaptured;
+    List<FriendlyPiece> redArmy, blueArmy, redCaptured, blueCaptured;
     private boolean isFlagCaptured;
     private final StrategoRules rules;
 
@@ -43,7 +43,15 @@ public class Game {
         blueCaptured = new ArrayList<>();
         rules = new StrategoRules();
     }
-
+    
+    public Game(GameState startState, Player redPlayer, Player bluePlayer) {
+        rules = new StrategoRules();
+        this.state = startState;
+        this.players = new Player[2];
+        players[BLUE] = bluePlayer;
+        players[RED] = redPlayer;
+        System.out.println("red= " + redPlayer + ", blue= " + bluePlayer );
+    }
     /**
      * begins the game.
      * @throws java.lang.Exception
@@ -66,13 +74,13 @@ public class Game {
                 } catch (Exception ex) {
                     System.err.println("AAAAHHH!!!! AI has gone CRAZY!!!!" + 
                             move.toString());
+ //                   System.out.println(state);
                     throw ex;
                 }
                 move = players[toMove].getMove();
-            }
-            processMove(move);
+            }         
             for (Player p: players) p.reportMove(move);
-            
+            processMove(move);
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
         for (Player p: players) p.displayBoard();
@@ -180,13 +188,17 @@ public class Game {
             FriendlyPiece defender = 
                     (FriendlyPiece)state.getSquare(destRow, destCol).getOccupier();
             state = state.makeMove(move);
-            piece = (FriendlyPiece) piece.setLocation(destRow, destCol);
             Piece winner;
-            winner = rules.resolveAttack(state, defender, piece);
+            winner = rules.resolveAttack(defender, piece);
             
             state = state.placePiece(destRow, destCol, winner);
             destSquare = state.getSquare(destRow, destCol);
-            if (defender.getRank() == Rank.FLAG) isFlagCaptured = true;
+            if (defender.getRank() == Rank.FLAG){
+                isFlagCaptured = true;
+                System.out.println("game \nWinner= " + winner);
+            }
+            
+            System.out.println(state);
             for(Player p: players) p.revealSquare(destSquare);
         }
         else {

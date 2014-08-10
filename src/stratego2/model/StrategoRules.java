@@ -178,7 +178,7 @@ public class StrategoRules {
      * occupied square
      * @return the winner 
      */
-    public Piece resolveAttack(GameState state, FriendlyPiece defender, FriendlyPiece attacker) {
+    public Piece resolveAttack(FriendlyPiece defender, FriendlyPiece attacker) {
         Piece winner;
         //check if defender is a bomb
         if (defender.getRank() == Rank.BOMB) {
