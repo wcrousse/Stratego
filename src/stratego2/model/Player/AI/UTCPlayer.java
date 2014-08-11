@@ -35,6 +35,7 @@ public class UTCPlayer extends AIPlayer {
 
     @Override
     public Move getMove() {
+        actions = new MCSTNode(state, actions);
         actions.expand();
         for (int i = 0; i < 5; i++) {
             root = new MCSTNode(getSampleState());
@@ -44,10 +45,28 @@ public class UTCPlayer extends AIPlayer {
                 double payout = defaultPolicy(next);
                 backup(next, payout);
             }
+            updateActionScores(i);
         }
-        return null;
+        return getBestMove();
+    }
+    
+    private void updateActionScores(int count) {
+        List<MCSTNode>possibleActions = actions.getChildren();
+        List<MCSTNode>treeActions = root.getChildren();
+        
+        for(int i=0; i<possibleActions.size(); i++) {
+            possibleActions.get(i).updateUtility(treeActions.get(i).getQvalue());
+        }
     }
 
+    private Move getBestMove() {
+        List<MCSTNode>possibleActions = actions.getChildren();
+        MCSTNode bestChild = possibleActions.get(0);
+        for(MCSTNode node: possibleActions) {
+            if(bestChild.getQvalue() < node.getQvalue()) bestChild = node;
+        }
+        return bestChild.getMove();
+    }
     private GameState getSampleState() {
         ArrayList<EnemyPiece> enemyPieces = new ArrayList<>();
         for (Square s : state) {
@@ -189,9 +208,9 @@ public class UTCPlayer extends AIPlayer {
             result = -result;
         }
         do {
-            if (node.getState().getToMove() != color) {
+//            if (node.getState().getToMove() != color) {
                 node.incrementCount();
-            }
+//            }
             node.updateQValue(result);
             if (!node.isRoot()) {
                 node = node.getParent();
@@ -206,8 +225,6 @@ public class UTCPlayer extends AIPlayer {
         Piece movedPiece; 
         Square endSquare = state.getSquare(move.getDestinationRow(), move.getDestinationColumn());
         movedPiece = endSquare.getOccupier();
-        if(movedPiece.getColor() != color)
-        actions = new MCSTNode(state, actions);
     }
 
     @Override
@@ -216,7 +233,7 @@ public class UTCPlayer extends AIPlayer {
     }
 
     @Override
-    public void revealSquare(Square square) {
+    public void revealSquare(Square square, Move move) {
         Piece winner = square.getOccupier();
         int row = winner.getRow();
         int column = winner.getColumn();
@@ -243,7 +260,6 @@ public class UTCPlayer extends AIPlayer {
             redArmy = friendlyArmy;
         }
         state = new GameState(Color.BLUE, blueArmy, redArmy);
-        actions = new MCSTNode(state);
         return friendlyArmy;
     }
 

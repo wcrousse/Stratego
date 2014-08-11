@@ -34,7 +34,7 @@ public class DefaultPlayer extends AIPlayer {
 
     @Override
     public Move getMove() {
-        System.out.println(state);
+//        System.out.println(state);
         ArrayList<MCSTNode> possibleActions = AIPlayer.generateSucessors(state);
         int moveIndex = (int)(Math.random()*possibleActions.size());
         MCSTNode action = possibleActions.get(moveIndex);

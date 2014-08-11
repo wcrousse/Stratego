@@ -179,6 +179,14 @@ class ProbabilityDistribution {
             default: return 0; //because we're all just slaves to the compiler
         }
     }
+    
+    public ProbabilityDistribution copy() {
+        ProbabilityDistribution copy = new ProbabilityDistribution();
+        for(Rank r: Rank.values()) {
+            copy.setProb(r, this.getProb(r));
+        }
+        return copy;
+    }
 
     @Override
     public String toString() {

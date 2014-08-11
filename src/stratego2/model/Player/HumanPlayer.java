@@ -122,7 +122,7 @@ public class HumanPlayer implements Player {
     }
 
     @Override
-    public void revealSquare(Square square) {
+    public void revealSquare(Square square, Move move) {
         if (square.isOccupied() && square.getOccupier().getColor() != color) {
             view.revealSquare(square.getOccupier());
         }

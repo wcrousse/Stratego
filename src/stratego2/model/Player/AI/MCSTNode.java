@@ -96,7 +96,7 @@ public class MCSTNode {
    }
    
    public boolean isRoot() {
-       return (parent != null);
+       return (parent == null);
    }
     
     /**
@@ -119,7 +119,7 @@ public class MCSTNode {
     }
     
     public void expand() {
-        if (children != null) return;
+        if (!children.isEmpty()) return;
         children = AIPlayer.generateSucessors(state);
         for (MCSTNode child: children) {
             child.parent = this;

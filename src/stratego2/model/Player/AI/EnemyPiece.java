@@ -61,7 +61,7 @@ public class EnemyPiece extends Piece{
 
     @Override
     public Piece copy() {
-        return new EnemyPiece(distribution, getColor(), getRow(), getColumn());
+        return new EnemyPiece(distribution.copy(), getColor(), getRow(), getColumn());
     }
 
     @Override

@@ -122,9 +122,9 @@ public abstract class AIPlayer implements Player {
         endC = move.getDestinationColumn();
         
         if(state.getSquare(endR, endC).isOccupied()) {
-            System.out.println("before move \n" + state);
+//            System.out.println("before move \n" + state);
             state = state.makeMove(move);
-            System.out.println("after move \n" + state);
+//            System.out.println("after move \n" + state);
         } else {
             state = state.makeMove(move);
         }
@@ -141,13 +141,13 @@ public abstract class AIPlayer implements Player {
     }
 
     @Override
-    public void revealSquare(Square square) {
-        Piece p = square.getOccupier();
-        int row = p.getRow();
-        int column = p.getColumn();
+    public void revealSquare(Square square, Move move) {
+        Piece p = (square.isOccupied())? square.getOccupier(): null;
+        int row = move.getDestinationRow();
+        int column = move.getDestinationColumn();
         state = state.placePiece(row, column, p);
-        System.out.println("AI \nWinner= "+p);
-        System.out.println(this.state);
+//        System.out.println("AI \nWinner= "+p);
+//        System.out.println(this.state);
     }
 
     @Override

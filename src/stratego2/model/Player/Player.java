@@ -56,7 +56,7 @@ public interface Player {
      * the corresponding View method.
      * @param square the square to be revealed
      */
-    public void revealSquare(Square square);
+    public void revealSquare(Square square, Move move);
 
     /**
      * reveals the winner of the game.

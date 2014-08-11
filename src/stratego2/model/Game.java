@@ -198,8 +198,8 @@ public class Game {
                 System.out.println("game \nWinner= " + winner);
             }
             
-            System.out.println(state);
-            for(Player p: players) p.revealSquare(destSquare);
+//            System.out.println(state);
+            for(Player p: players) p.revealSquare(destSquare, move);
         }
         else {
             state = state.makeMove(move);
