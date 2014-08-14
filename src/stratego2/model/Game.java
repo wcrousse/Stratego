@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import stratego2.model.Player.AI.AIPlayer;
 import stratego2.model.Player.HumanPlayer;
 import stratego2.model.Player.Player;
 
@@ -68,6 +69,11 @@ public class Game {
         do {
             for (Player p: players) p.displayBoard();//probably should change leave it for now
             Move move = players[toMove].getMove();
+            if (move == null) {
+                System.out.println(state);
+                isGameOver();
+                System.out.println("game over "+isGameOver());
+            }
             while (!rules.isLegal(state, move)) {               
                 try {
                     players[toMove].reportIllegalMove();
@@ -78,7 +84,8 @@ public class Game {
                     throw ex;
                 }
                 move = players[toMove].getMove();
-            }         
+            } 
+            
             for (Player p: players) p.reportMove(move);
             processMove(move);
             toMove = (toMove + 1) % 2;
@@ -132,15 +139,7 @@ public class Game {
     protected boolean isGameOver() {
         boolean result = true;
         if (!isFlagCaptured) { 
-            String movestr = (toMove == BLUE)? "blue": "red";
-            System.out.println("to move = " + movestr + state.getToMove());
-            List<FriendlyPiece> army = (toMove == BLUE) ? blueArmy : redArmy;
-            for (FriendlyPiece piece : army) {
-                if (hasMove(piece)) {
-                    System.out.println(true);
-                    return false;
-                }
-            }
+            return (AIPlayer.generateSucessors(state).isEmpty());
         }
         return result;
 

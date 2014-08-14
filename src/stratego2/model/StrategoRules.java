@@ -121,6 +121,9 @@ public class StrategoRules {
     public boolean isLegal(GameState state, Move move) {
         Square startSquare;
         startSquare = state.getSquare(move.getStartRow(), move.getStartColumn());
+        if (!startSquare.isOccupied()){
+            System.out.println(state);
+        }
         FriendlyPiece piece = (FriendlyPiece)startSquare.getOccupier();
         return isLegal(state, piece, move.getDestinationRow(),
                 move.getDestinationColumn());

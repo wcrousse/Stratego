@@ -165,9 +165,13 @@ public class GameState extends Board {
                 if (!s.isActive()) {
                     sb.append("  -  ");
                 } else if (s.isOccupied()) {
-                    FriendlyPiece p = (FriendlyPiece)s.getOccupier();
+                    Piece p = s.getOccupier();
+                    
                     char col = (p.getColor() == Color.BLUE)? 'B': 'R';
-                    int ran = (p.getRank().getValue());
+                    int ran = 0;
+                    if (p instanceof FriendlyPiece) {
+                        ran = (((FriendlyPiece)p).getRank().getValue());
+                    }
                     String ranstr;
                     if(ran<10) ranstr = "0"+ran;
                     else ranstr = ""+ran;

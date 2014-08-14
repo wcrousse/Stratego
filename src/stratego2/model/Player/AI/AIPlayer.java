@@ -57,7 +57,7 @@ public abstract class AIPlayer implements Player {
      * @param state the current game state
      * @return the list of available actions.
      */
-    protected static ArrayList<MCSTNode> generateSucessors(GameState state) {
+    public static ArrayList<MCSTNode> generateSucessors(GameState state) {
         List<FriendlyPiece> movablePieces = state.getMovablePieces();
         ArrayList<MCSTNode> possibleActions = getPossibleActions(movablePieces, state);
         return possibleActions;

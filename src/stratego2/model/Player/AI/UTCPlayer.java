@@ -35,12 +35,15 @@ public class UTCPlayer extends AIPlayer {
 
     @Override
     public Move getMove() {
-        actions = new MCSTNode(state, actions);
+        GameState sampleState = getSampleState();
+        actions = new MCSTNode(sampleState, actions);
+        System.out.println(actions.getState());
+        System.out.println(state);
         actions.expand();
         for (int i = 0; i < 5; i++) {
-            root = new MCSTNode(getSampleState());
+            root = new MCSTNode(sampleState);
             root.expand();
-            for (int j = 0; j < 5; j++) {
+            for (int j = 0; j < 20; j++) {
                 MCSTNode next = treePolicy(root);
                 double payout = defaultPolicy(next);
                 backup(next, payout);
@@ -49,30 +52,40 @@ public class UTCPlayer extends AIPlayer {
         }
         return getBestMove();
     }
-    
+
     private void updateActionScores(int count) {
-        List<MCSTNode>possibleActions = actions.getChildren();
-        List<MCSTNode>treeActions = root.getChildren();
-        
-        for(int i=0; i<possibleActions.size(); i++) {
+        List<MCSTNode> possibleActions = actions.getChildren();
+        List<MCSTNode> treeActions = root.getChildren();
+
+        for (int i = 0; i < possibleActions.size(); i++) {
             possibleActions.get(i).updateUtility(treeActions.get(i).getQvalue());
         }
     }
 
     private Move getBestMove() {
-        List<MCSTNode>possibleActions = actions.getChildren();
+        List<MCSTNode> possibleActions = actions.getChildren();
         MCSTNode bestChild = possibleActions.get(0);
-        for(MCSTNode node: possibleActions) {
-            if(bestChild.getQvalue() < node.getQvalue()) bestChild = node;
+        for (MCSTNode node : possibleActions) {
+            if (bestChild.getQvalue() < node.getQvalue()) {
+                bestChild = node;
+            }
         }
         return bestChild.getMove();
     }
+
     private GameState getSampleState() {
         ArrayList<EnemyPiece> enemyPieces = new ArrayList<>();
+        army.clear();
         for (Square s : state) {
-            if (s.isOccupied() && s.getOccupier() instanceof EnemyPiece) {
-                EnemyPiece ep = (EnemyPiece) s.getOccupier();
-                enemyPieces.add(ep);
+            if (s.isOccupied()) {
+
+                if (s.getOccupier() instanceof EnemyPiece) {
+                    EnemyPiece ep = (EnemyPiece) s.getOccupier();
+                    enemyPieces.add(ep);
+
+                } else {
+                    army.add((FriendlyPiece) s.getOccupier());
+                }
 
             }
         }
@@ -92,7 +105,7 @@ public class UTCPlayer extends AIPlayer {
     }
 
     private void revealRank(EnemyPiece piece, Rank rank, List<EnemyPiece> army) {
-        
+
         ProbabilityDistribution distribution = piece.getDistribution();
         distribution.setProb(rank, 1);
         for (Rank r : Rank.values()) {
@@ -109,9 +122,13 @@ public class UTCPlayer extends AIPlayer {
         }
         System.out.println("rank: " + rank + "numLeft: " + numAvailable);
         double scale = 0;
-        if (numAvailable != 0) scale = (double)numAvailable / (numAvailable + 1);
+        if (numAvailable != 0) {
+            scale = (double) numAvailable / (numAvailable + 1);
+        }
         for (EnemyPiece ep : army) {
-            if(ep == piece) break;
+            if (ep == piece) {
+                break;
+            }
             ProbabilityDistribution dist = ep.getDistribution();
             dist.setProb(rank, scale * dist.getProb(rank));
             try {
@@ -124,7 +141,7 @@ public class UTCPlayer extends AIPlayer {
 
     private void normalize(ProbabilityDistribution dist, Rank modified) throws Exception {
         double total = 0;
-      
+
         for (Rank r : Rank.values()) {
             if (r != modified) {
                 total += dist.getProb(r);
@@ -133,15 +150,15 @@ public class UTCPlayer extends AIPlayer {
         if (Math.abs(total) < EPSILON) {
             return;
         }
-   
+
         double scale = (1 - dist.getProb(modified)) / total;
-        
-            for (Rank r : Rank.values()) {
-                if (r != modified) {
-                    dist.setProb(r, scale * dist.getProb(r));
-                }
+
+        for (Rank r : Rank.values()) {
+            if (r != modified) {
+                dist.setProb(r, scale * dist.getProb(r));
             }
-        
+        }
+
         total = 0;
         for (Rank r : Rank.values()) {
             total += dist.getProb(r);
@@ -171,9 +188,10 @@ public class UTCPlayer extends AIPlayer {
 
     private MCSTNode treePolicy(MCSTNode node) {
         if (node.isLeaf()) {
+            node.expand();
             return node;
         } else {
-            double bestValue = 0;
+            double bestValue = Double.NEGATIVE_INFINITY;
             MCSTNode bestNode = null;
             for (MCSTNode child : node.getChildren()) {
                 double explorationFactor
@@ -195,7 +213,7 @@ public class UTCPlayer extends AIPlayer {
                 new DefaultPlayer(Color.BLUE, rules, node.getState()));
         try {
             Thread t = new Thread(simulator);
-            t.start();       
+            t.start();
             t.join();
         } catch (InterruptedException ex) {
             Logger.getLogger(UTCPlayer.class.getName()).log(Level.SEVERE, null, ex);
@@ -209,7 +227,7 @@ public class UTCPlayer extends AIPlayer {
         }
         do {
 //            if (node.getState().getToMove() != color) {
-                node.incrementCount();
+            node.incrementCount();
 //            }
             node.updateQValue(result);
             if (!node.isRoot()) {
@@ -217,31 +235,39 @@ public class UTCPlayer extends AIPlayer {
             }
             result = -result;
         } while (!node.isRoot());
+        node.incrementCount();
     }
 
     @Override
     public void reportMove(Move move) {
+        System.out.println("before Move: \n" + state);
         super.reportMove(move);
-        Piece movedPiece; 
+        System.out.println("After move: \n" + state);
+        Piece movedPiece;
         Square endSquare = state.getSquare(move.getDestinationRow(), move.getDestinationColumn());
         movedPiece = endSquare.getOccupier();
     }
 
     @Override
     public Color getColor() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return color;
     }
 
     @Override
     public void revealSquare(Square square, Move move) {
-        Piece winner = square.getOccupier();
-        int row = winner.getRow();
-        int column = winner.getColumn();
-  //      state = state.placePiece(row, column, winner);
-        if (winner.getColor() != color) {
-            square = state.getSquare(winner.getRow(), winner.getColumn());
-            EnemyPiece ep = (EnemyPiece) square.getOccupier();
-   //         ep.pieceRevealed(winner.getRank());
+        int row = move.getDestinationColumn();
+        int column = move.getDestinationRow();
+        if (!square.isOccupied()) {
+            state = state.placePiece(row, column, null);
+        } else {
+            Piece winner = square.getOccupier();
+
+            //      state = state.placePiece(row, column, winner);
+            if (winner.getColor() != color) {
+                square = state.getSquare(winner.getRow(), winner.getColumn());
+                EnemyPiece ep = (EnemyPiece) square.getOccupier();
+                //         ep.pieceRevealed(winner.getRank());
+            }
         }
     }
 
