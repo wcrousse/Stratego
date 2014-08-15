@@ -125,5 +125,9 @@ public class MCSTNode {
             child.parent = this;
         }
     }
+
+    double getUtility() {
+        return utility;
+    }
  
 }

@@ -24,6 +24,8 @@ public class UTCPlayer extends AIPlayer {
     private static final double UTC_CONSTANT = 0.5;
     private MCSTNode actions;
     private MCSTNode root;
+    
+    private Piece tempCaptured;
 
     public UTCPlayer(Color color) {
         this.color = color;
@@ -40,10 +42,12 @@ public class UTCPlayer extends AIPlayer {
         System.out.println(actions.getState());
         System.out.println(state);
         actions.expand();
-        for (int i = 0; i < 5; i++) {
-            root = new MCSTNode(sampleState);
+        for (int i = 0; i < 4; i++) {
+            root = new MCSTNode(getSampleState());
             root.expand();
-            for (int j = 0; j < 20; j++) {
+            for (int j = 0; j < 250; j++) {
+                if (j > 20)
+                    System.out.println();
                 MCSTNode next = treePolicy(root);
                 double payout = defaultPolicy(next);
                 backup(next, payout);
@@ -66,7 +70,7 @@ public class UTCPlayer extends AIPlayer {
         List<MCSTNode> possibleActions = actions.getChildren();
         MCSTNode bestChild = possibleActions.get(0);
         for (MCSTNode node : possibleActions) {
-            if (bestChild.getQvalue() < node.getQvalue()) {
+            if (bestChild.getUtility() < node.getUtility()) {
                 bestChild = node;
             }
         }
@@ -122,14 +126,15 @@ public class UTCPlayer extends AIPlayer {
         }
         System.out.println("rank: " + rank + "numLeft: " + numAvailable);
         double scale = 0;
-        if (numAvailable != 0) {
+        if (numAvailable > 0) {
             scale = (double) numAvailable / (numAvailable + 1);
         }
         for (EnemyPiece ep : army) {
-            if (ep == piece) {
-                break;
-            }
             ProbabilityDistribution dist = ep.getDistribution();
+            if (ep == piece || Math.abs(dist.getProb(rank) - 1) < EPSILON) {
+                continue;
+            }
+
             dist.setProb(rank, scale * dist.getProb(rank));
             try {
                 normalize(dist, rank);
@@ -183,6 +188,9 @@ public class UTCPlayer extends AIPlayer {
                 break;
             }
         }
+        if (returnVal == null) {
+            System.out.println();
+        }
         return returnVal;
     }
 
@@ -218,6 +226,7 @@ public class UTCPlayer extends AIPlayer {
         } catch (InterruptedException ex) {
             Logger.getLogger(UTCPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
+        System.out.println(simulator.getState());
         return (simulator.getResult() == color) ? 1 : -1;
     }
 
@@ -240,12 +249,15 @@ public class UTCPlayer extends AIPlayer {
 
     @Override
     public void reportMove(Move move) {
+        Square endSquare = state.getSquare(move.getDestinationRow(), move.getDestinationColumn());
         System.out.println("before Move: \n" + state);
+        if (endSquare.isOccupied()) {
+            tempCaptured = endSquare.getOccupier();
+        }
         super.reportMove(move);
         System.out.println("After move: \n" + state);
-        Piece movedPiece;
-        Square endSquare = state.getSquare(move.getDestinationRow(), move.getDestinationColumn());
-        movedPiece = endSquare.getOccupier();
+        
+
     }
 
     @Override
@@ -255,20 +267,18 @@ public class UTCPlayer extends AIPlayer {
 
     @Override
     public void revealSquare(Square square, Move move) {
-        int row = move.getDestinationColumn();
-        int column = move.getDestinationRow();
+        System.out.println(state);
+        int row = move.getDestinationRow();
+        int column = move.getDestinationColumn();
         if (!square.isOccupied()) {
             state = state.placePiece(row, column, null);
         } else {
             Piece winner = square.getOccupier();
-
-            //      state = state.placePiece(row, column, winner);
-            if (winner.getColor() != color) {
-                square = state.getSquare(winner.getRow(), winner.getColumn());
-                EnemyPiece ep = (EnemyPiece) square.getOccupier();
-                //         ep.pieceRevealed(winner.getRank());
+            if(tempCaptured.getColor() == winner.getColor()) {
+                state = state.placePiece(row, column, tempCaptured);
             }
         }
+        System.out.println(state);
     }
 
     @Override

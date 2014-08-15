@@ -22,7 +22,8 @@ public class Game {
     public static final int ARMY_SIZE = 40;
     /**
      * a tuple to hold the player objects.  
-     **/
+     *
+     */
     Player[] players;
     /**
      * intended as to index the players array. Should be incremented and then
@@ -44,17 +45,19 @@ public class Game {
         blueCaptured = new ArrayList<>();
         rules = new StrategoRules();
     }
-    
+
     public Game(GameState startState, Player redPlayer, Player bluePlayer) {
         rules = new StrategoRules();
         this.state = startState;
         this.players = new Player[2];
         players[BLUE] = bluePlayer;
         players[RED] = redPlayer;
-        System.out.println("red= " + redPlayer + ", blue= " + bluePlayer );
+        System.out.println("red= " + redPlayer + ", blue= " + bluePlayer);
     }
+
     /**
      * begins the game.
+     *
      * @throws java.lang.Exception
      */
     public void startGame() throws Exception {
@@ -63,34 +66,43 @@ public class Game {
         toMove = BLUE;
         state = new GameState(Color.BLUE, blueArmy, redArmy);
         Color winner = play();
-        for (Player p: players) p.reportResult(winner);
+        for (Player p : players) {
+            p.reportResult(winner);
+        }
     }
+
     protected Color play() throws Exception {
         do {
-            for (Player p: players) p.displayBoard();//probably should change leave it for now
+            for (Player p : players) {
+                p.displayBoard();//probably should change leave it for now
+            }
             Move move = players[toMove].getMove();
             if (move == null) {
                 System.out.println(state);
                 isGameOver();
-                System.out.println("game over "+isGameOver());
+                System.out.println("game over " + isGameOver());
             }
-            while (!rules.isLegal(state, move)) {               
+            while (!rules.isLegal(state, move)) {
                 try {
                     players[toMove].reportIllegalMove();
                 } catch (Exception ex) {
-                    System.err.println("AAAAHHH!!!! AI has gone CRAZY!!!!" + 
-                            move.toString());
- //                   System.out.println(state);
+                    System.err.println("AAAAHHH!!!! AI has gone CRAZY!!!!"
+                            + move.toString() + "\n" + state);
+                    //                   System.out.println(state);
                     throw ex;
                 }
                 move = players[toMove].getMove();
-            } 
-            
-            for (Player p: players) p.reportMove(move);
+            }
+
+            for (Player p : players) {
+                p.reportMove(move);
+            }
             processMove(move);
             toMove = (toMove + 1) % 2;
         } while (!isGameOver());
-        for (Player p: players) p.displayBoard();
+        for (Player p : players) {
+            p.displayBoard();
+        }
         return declareWinner();
     }
 
@@ -112,7 +124,7 @@ public class Game {
                     blueArmy = players[BLUE].getSetup();
                 }
             };
-            
+
             Thread t2 = new Thread() {
                 @Override
                 public void run() {
@@ -138,7 +150,7 @@ public class Game {
      */
     protected boolean isGameOver() {
         boolean result = true;
-        if (!isFlagCaptured) { 
+        if (!isFlagCaptured) {
             return (AIPlayer.generateSucessors(state).isEmpty());
         }
         return result;
@@ -181,35 +193,40 @@ public class Game {
         Square destSquare = state.getSquare(destRow, destCol);
         int row = move.getStartRow();
         int column = move.getStartColumn();
-        FriendlyPiece piece = (FriendlyPiece)state.getSquare(row, column).getOccupier();
-        piece = (FriendlyPiece)piece.setLocation(destRow, destCol);
+        FriendlyPiece piece = (FriendlyPiece) state.getSquare(row, column).getOccupier();
+        piece = (FriendlyPiece) piece.setLocation(destRow, destCol);
         if (destSquare.isOccupied()) {
-            FriendlyPiece defender = 
-                    (FriendlyPiece)state.getSquare(destRow, destCol).getOccupier();
+            FriendlyPiece defender
+                    = (FriendlyPiece) state.getSquare(destRow, destCol).getOccupier();
             state = state.makeMove(move);
             Piece winner;
             winner = rules.resolveAttack(defender, piece);
-            
+
             state = state.placePiece(destRow, destCol, winner);
             destSquare = state.getSquare(destRow, destCol);
-            if (defender.getRank() == Rank.FLAG){
+            if (defender.getRank() == Rank.FLAG) {
                 isFlagCaptured = true;
                 System.out.println("game \nWinner= " + winner);
             }
-            
+
 //            System.out.println(state);
-            for(Player p: players) p.revealSquare(destSquare, move);
-        }
-        else {
+            for (Player p : players) {
+                p.revealSquare(destSquare, move);
+            }
+        } else {
             state = state.makeMove(move);
         }
-        
+
     }
 
     protected Color declareWinner() {
-        Player winner = (toMove == BLUE)? players[BLUE]: players[RED];
+        Player winner = (toMove == BLUE) ? players[RED] : players[BLUE];
         //for(Player p: players) p.reportResult(winner.getColor());
         return winner.getColor();
     }
-    
+
+    public GameState getState() {
+        return state;
+    }
+
 }

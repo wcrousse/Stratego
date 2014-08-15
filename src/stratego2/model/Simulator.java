@@ -14,8 +14,9 @@ import stratego2.model.Player.Player;
  */
 public class Simulator extends Game implements Runnable{
     
-    private GameState startState;
+    private final GameState startState;
     private Color winColor;
+
     
     public Simulator(GameState startState, Player bluePlayer, Player redPlayer) {
         super(startState, bluePlayer, redPlayer);
@@ -53,6 +54,8 @@ public class Simulator extends Game implements Runnable{
 
     public Color getResult() {
         return winColor;
-    }    
+    } 
+    
+
     
 }
