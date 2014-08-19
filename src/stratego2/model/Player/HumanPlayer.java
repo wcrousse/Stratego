@@ -10,7 +10,6 @@ import stratego2.model.GameState;
 import stratego2.model.HumanEnemyPiece;
 import stratego2.model.Move;
 import stratego2.model.Piece;
-import stratego2.model.Player.Player;
 import stratego2.model.Rank;
 import stratego2.model.Square;
 import stratego2.view.Display;
@@ -28,6 +27,7 @@ public class HumanPlayer implements Player {
     private Color color;
     private Display view;
     private GameState state;
+    private Piece tempCaptured;
 
     public HumanPlayer(Color color, Display view) {
         this.color = color;
@@ -123,9 +123,20 @@ public class HumanPlayer implements Player {
 
     @Override
     public void revealSquare(Square square, Move move) {
-        if (square.isOccupied() && square.getOccupier().getColor() != color) {
-            view.revealSquare(square.getOccupier());
+        int row = move.getDestinationRow();
+        int column = move.getDestinationColumn();
+        if (!square.isOccupied()) {
+            state = state.placePiece(row, column, null);
+        } else {
+            Piece winner = square.getOccupier();
+            if(tempCaptured.getColor() == winner.getColor()) {
+                state = state.placePiece(row, column, tempCaptured);
+            }
+            if(winner.getColor() != color) {
+                view.revealSquare(winner);
+            }
         }
+        System.out.println(state);
     }
 
     @Override
@@ -144,6 +155,10 @@ public class HumanPlayer implements Player {
 
     @Override
     public void reportMove(Move move) {
+        Square endSquare = state.getSquare(move.getDestinationRow(), move.getDestinationColumn());
+        if (endSquare.isOccupied()) {
+            tempCaptured = endSquare.getOccupier();
+        }
          state = state.makeMove(move);
     }
 

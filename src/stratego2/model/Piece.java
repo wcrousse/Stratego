@@ -12,7 +12,7 @@ public abstract class Piece {
     private final int  row, column;
 //    private final Rank rank;
     private final Color color;
-    
+   
     public Piece(Color color, int row, int column) {
         this.color = color;
         this.row = row;

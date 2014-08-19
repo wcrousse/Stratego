@@ -1,5 +1,3 @@
-
-
 package stratego2.model.Player.AI;
 
 import java.util.ArrayList;
@@ -23,6 +21,7 @@ import stratego2.model.StrategoRules;
  * @author roussew
  */
 public abstract class AIPlayer implements Player {
+
     Color color;
     protected final static StrategoRules rules = new StrategoRules();
     protected GameState state;
@@ -31,11 +30,10 @@ public abstract class AIPlayer implements Player {
     protected ArrayList<FriendlyPiece> army;
     protected Move lastMove;
 
-    
     public AIPlayer() {
         availableMoves = new ArrayList<>();
     }
-    
+
     public AIPlayer(Color color, StrategoRules rules) {
         army = new ArrayList<>();
         this.color = color;
@@ -50,10 +48,11 @@ public abstract class AIPlayer implements Player {
     public Color getColor() {
         return color;
     }
-    
+
     /**
      * generates a list of all of the moves available to the player at the given
      * game state.
+     *
      * @param state the current game state
      * @return the list of available actions.
      */
@@ -62,32 +61,32 @@ public abstract class AIPlayer implements Player {
         ArrayList<MCSTNode> possibleActions = getPossibleActions(movablePieces, state);
         return possibleActions;
     }
-    
-    static ArrayList<MCSTNode> getPossibleActions(List<FriendlyPiece> movablePieces, 
+
+    static ArrayList<MCSTNode> getPossibleActions(List<FriendlyPiece> movablePieces,
             GameState state) {
         ArrayList<MCSTNode> possibleActions = new ArrayList<>();
-        for (FriendlyPiece p: movablePieces) {
+        for (FriendlyPiece p : movablePieces) {
             possibleActions.addAll(getPossibleActions(p, state));
         }
         return possibleActions;
     }
-    
+
     static ArrayList<MCSTNode> getPossibleActions(FriendlyPiece piece, GameState state) {
         ArrayList<MCSTNode> possibleActions;
-        if(piece.getRank() == Rank.SCOUT) {
+        if (piece.getRank() == Rank.SCOUT) {
             possibleActions = getScoutActions(piece, state);
-            
+
         } else {
             possibleActions = new ArrayList<>();
             int startRow = piece.getRow();
             int startColumn = piece.getColumn();
             Move[] moves = new Move[4];
-            moves[0] = new Move(startRow, startColumn, startRow, startColumn -1);
-            moves[1] = new Move(startRow, startColumn, startRow, startColumn +1);
-            moves[2] = new Move(startRow, startColumn, startRow-1, startColumn);
-            moves[3] = new Move(startRow, startColumn, startRow+1, startColumn);
-            
-            for(Move move: moves) {
+            moves[0] = new Move(startRow, startColumn, startRow, startColumn - 1);
+            moves[1] = new Move(startRow, startColumn, startRow, startColumn + 1);
+            moves[2] = new Move(startRow, startColumn, startRow - 1, startColumn);
+            moves[3] = new Move(startRow, startColumn, startRow + 1, startColumn);
+
+            for (Move move : moves) {
                 if (rules.isLegal(state, move)) {
                     possibleActions.add(new MCSTNode(state, move));
                 }
@@ -95,12 +94,12 @@ public abstract class AIPlayer implements Player {
         }
         return possibleActions;
     }
-    
+
     static ArrayList<MCSTNode> getScoutActions(FriendlyPiece piece, GameState state) {
         int startRow = piece.getRow();
         int startColumn = piece.getColumn();
         ArrayList<MCSTNode> scoutActions = new ArrayList<>();
-        for (int i=0; i<Game.NUM_ROWS; i++) {
+        for (int i = 0; i < Game.NUM_ROWS; i++) {
             Move move = new Move(startRow, startColumn, i, startColumn);
             if (rules.isLegal(state, move)) {
                 scoutActions.add(new MCSTNode(state, move));
@@ -112,37 +111,33 @@ public abstract class AIPlayer implements Player {
         }
         return scoutActions;
     }
-    
+
     @Override
     public void reportMove(Move move) {
-        int startR, startC, endR, endC;
-        startR = move.getStartRow();
-        startC = move.getStartColumn();
+        int endR, endC;
+
         endR = move.getDestinationRow();
         endC = move.getDestinationColumn();
-        
-        if(state.getSquare(endR, endC).isOccupied()) {
-//            System.out.println("before move \n" + state);
-            state = state.makeMove(move);
+
+        state = state.makeMove(move);
 //            System.out.println("after move \n" + state);
-        } else {
-            state = state.makeMove(move);
-        }
+
     }
 
     /**
      * should never be called. AI should not attempt illegal moves.
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     @Override
-    public void reportIllegalMove() throws Exception{
+    public void reportIllegalMove() throws Exception {
         System.out.println(state);
-        throw new Exception("AI made illegal move" );
+        throw new Exception("AI made illegal move");
     }
 
     @Override
     public void revealSquare(Square square, Move move) {
-        Piece p = (square.isOccupied())? square.getOccupier(): null;
+        Piece p = (square.isOccupied()) ? square.getOccupier() : null;
         int row = move.getDestinationRow();
         int column = move.getDestinationColumn();
         state = state.placePiece(row, column, p);
@@ -152,16 +147,17 @@ public abstract class AIPlayer implements Player {
 
     @Override
     public void reportResult(Color color) {
-        
+
         System.out.println("winner = " + color.toString());
     }
 
     /**
-     * stochastically selects a starting position. Currently a bit rough. 
+     * stochastically selects a starting position. Currently a bit rough.
      * ultimately we need to determine some limited number of starting position
-     * features, and select them with a probability relative to their determined 
-     * strengths, and randomize the remaining pieces. 
-     * @return 
+     * features, and select them with a probability relative to their determined
+     * strengths, and randomize the remaining pieces.
+     *
+     * @return
      */
     @Override
     public List<FriendlyPiece> getSetup() {
@@ -174,7 +170,7 @@ public abstract class AIPlayer implements Player {
                 if (this.color == Color.BLUE) {
                     p = new FriendlyPiece(color, i, j, rank);
                 } else {
-                    p = new FriendlyPiece(color, 9-i, 9-j, rank);
+                    p = new FriendlyPiece(color, 9 - i, 9 - j, rank);
                 }
 
                 army.add(p);
@@ -182,32 +178,32 @@ public abstract class AIPlayer implements Player {
         }
         return army;
     }
-    
-    private int[][] startupFromFile(int setUpNum) {
-        
-        FileParser parser = new FileParser();
-            String fileName;
-            switch (setUpNum) {
-                case 0:
-                    fileName = StartPossitions.FLAG_LEFT1.fileName();
-                    break;
-                case 1:
-                    fileName = StartPossitions.FLAG_RIGHT1.fileName();
-                    break;
-                case 2:
-                    fileName = StartPossitions.FLAG_MIDDLE.fileName();
-                    break;
-                case 3:
-                    fileName = StartPossitions.FLAG_LEFT2.fileName();
-                    break;
-                case 4:
-                    fileName = StartPossitions.FLAG_RIGHT2.fileName();
-                    break;
-                default:
-                    //appease the compiler
-                    fileName = null;
-            }
 
-            return parser.readPositionFile(fileName);
+    private int[][] startupFromFile(int setUpNum) {
+
+        FileParser parser = new FileParser();
+        String fileName;
+        switch (setUpNum) {
+            case 0:
+                fileName = StartPossitions.FLAG_LEFT1.fileName();
+                break;
+            case 1:
+                fileName = StartPossitions.FLAG_RIGHT1.fileName();
+                break;
+            case 2:
+                fileName = StartPossitions.FLAG_MIDDLE.fileName();
+                break;
+            case 3:
+                fileName = StartPossitions.FLAG_LEFT2.fileName();
+                break;
+            case 4:
+                fileName = StartPossitions.FLAG_RIGHT2.fileName();
+                break;
+            default:
+                //appease the compiler
+                fileName = null;
+        }
+
+        return parser.readPositionFile(fileName);
     }
 }

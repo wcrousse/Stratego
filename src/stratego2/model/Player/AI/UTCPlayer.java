@@ -24,7 +24,7 @@ public class UTCPlayer extends AIPlayer {
     private static final double UTC_CONSTANT = 0.5;
     private MCSTNode actions;
     private MCSTNode root;
-    
+
     private Piece tempCaptured;
 
     public UTCPlayer(Color color) {
@@ -42,12 +42,13 @@ public class UTCPlayer extends AIPlayer {
         System.out.println(actions.getState());
         System.out.println(state);
         actions.expand();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             root = new MCSTNode(getSampleState());
             root.expand();
-            for (int j = 0; j < 250; j++) {
-                if (j > 20)
+            for (int j = 0; j < 50; j++) {
+                if (j > 20) {
                     System.out.println();
+                }
                 MCSTNode next = treePolicy(root);
                 double payout = defaultPolicy(next);
                 backup(next, payout);
@@ -78,6 +79,16 @@ public class UTCPlayer extends AIPlayer {
     }
 
     private GameState getSampleState() {
+        ArrayList<EnemyPiece> enemyPieces = getArmies();
+        ArrayList<FriendlyPiece> convertedPieces = convertPieces(enemyPieces);
+        if (color == color.RED) {
+            return new GameState(state.getToMove(), convertedPieces, army);
+        } else {
+            return new GameState(state.getToMove(), army, convertedPieces);
+        }
+    }
+
+    private ArrayList<EnemyPiece> getArmies() {
         ArrayList<EnemyPiece> enemyPieces = new ArrayList<>();
         army.clear();
         for (Square s : state) {
@@ -93,45 +104,45 @@ public class UTCPlayer extends AIPlayer {
 
             }
         }
-        ArrayList<FriendlyPiece> convertedPieces = convertPieces(enemyPieces);
-        return new GameState(state.getToMove(), army, convertedPieces);
+        return enemyPieces;
     }
 
     private ArrayList<FriendlyPiece> convertPieces(ArrayList<EnemyPiece> enemy) {
         ArrayList<FriendlyPiece> convertedPieces = new ArrayList<>();
         for (EnemyPiece p : enemy) {
-            Rank rank = determineRank(p);
-            revealRank(p, rank, enemy);
+            ProbabilityDistribution dist = p.getDistribution();
+            Rank rank = determineRank(dist);
+            revealRank(dist, rank);
             convertedPieces.add(
                     new FriendlyPiece(p.getColor(), p.getRow(), p.getColumn(), rank));
         }
         return convertedPieces;
     }
 
-    private void revealRank(EnemyPiece piece, Rank rank, List<EnemyPiece> army) {
-
-        ProbabilityDistribution distribution = piece.getDistribution();
-        distribution.setProb(rank, 1);
+    private void revealRank(ProbabilityDistribution changed, Rank rank) {
+        changed.setProb(rank, 1);
         for (Rank r : Rank.values()) {
             if (r != rank) {
-                distribution.setProb(r, 0);
+                changed.setProb(r, 0);
             }
+        }        
+        ArrayList<EnemyPiece> enemyArmy = getArmies();
+        ArrayList<ProbabilityDistribution>distributions = getDistributions(enemyArmy);
+        reCalibrateBeliefState(rank, distributions, changed);
+    }
+
+    private void reCalibrateBeliefState(Rank rank,
+            List<ProbabilityDistribution> distributions,
+            ProbabilityDistribution changed) {
+
+        double scale;
+        if (Math.abs(changed.getProb(rank) - 1) < EPSILON) {
+            scale = getScaleUp(rank, distributions);
+        } else {
+            scale = getScaleDown(rank, distributions);
         }
-        int numAvailable = rank.getCount();
-        for (EnemyPiece ep : army) {
-            ProbabilityDistribution dist = ep.getDistribution();
-            if (Math.abs(dist.getProb(rank) - 1) < EPSILON) {
-                numAvailable--;
-            }
-        }
-        System.out.println("rank: " + rank + "numLeft: " + numAvailable);
-        double scale = 0;
-        if (numAvailable > 0) {
-            scale = (double) numAvailable / (numAvailable + 1);
-        }
-        for (EnemyPiece ep : army) {
-            ProbabilityDistribution dist = ep.getDistribution();
-            if (ep == piece || Math.abs(dist.getProb(rank) - 1) < EPSILON) {
+        for (ProbabilityDistribution dist : distributions) {
+            if (dist == changed || Math.abs(dist.getProb(rank) - 1) < EPSILON) {
                 continue;
             }
 
@@ -142,6 +153,32 @@ public class UTCPlayer extends AIPlayer {
                 Logger.getLogger(UTCPlayer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+    }
+
+    private double getScaleUp(Rank rank, List<ProbabilityDistribution> distributions) {
+        int numAvailable = rank.getCount();
+        for (ProbabilityDistribution dist : distributions) {
+            if (Math.abs(dist.getProb(rank) - 1) < EPSILON) {
+                numAvailable--;
+            }
+        }
+        System.out.println("rank: " + rank + "numLeft: " + numAvailable);
+        double scale = 0;
+        if (numAvailable > 0) {
+            scale = (double) numAvailable / (numAvailable + 1);
+        }
+        return scale;
+    }
+
+    private double getScaleDown(Rank rank, List<ProbabilityDistribution> distributions) {
+        int count = 0;
+        for (ProbabilityDistribution dist : distributions) {
+            if (Math.abs(dist.getProb(rank)) > EPSILON) {
+                count++;
+            }
+        }
+        return (count + 1) / count;
     }
 
     private void normalize(ProbabilityDistribution dist, Rank modified) throws Exception {
@@ -173,13 +210,12 @@ public class UTCPlayer extends AIPlayer {
         }
     }
 
-    private Rank determineRank(EnemyPiece p) {
+    private Rank determineRank(ProbabilityDistribution dist) {
         double n = Math.random();
-        ProbabilityDistribution distribution = p.getDistribution();
         double upper = 0;
         Rank returnVal = null;
         for (Rank r : Rank.values()) {
-            upper += distribution.getProb(r);
+            upper += dist.getProb(r);
             if (Double.isNaN(upper)) {
                 System.out.print("this is it " + r);
             }
@@ -250,14 +286,65 @@ public class UTCPlayer extends AIPlayer {
     @Override
     public void reportMove(Move move) {
         Square endSquare = state.getSquare(move.getDestinationRow(), move.getDestinationColumn());
+        Square startSquare = state.getSquare(move.getStartRow(), move.getStartColumn());
+
+        if (startSquare.getOccupier() instanceof EnemyPiece) {
+            EnemyPiece piece = (EnemyPiece) startSquare.getOccupier();
+            ProbabilityDistribution dist = piece.getDistribution();
+            state = state.placePiece(move.getStartRow(), move.getStartColumn(), piece);
+            ArrayList<EnemyPiece> enemyArmy = null;
+            ArrayList<ProbabilityDistribution> distributions;
+
+            if (isScoutMove(move)) {
+                try {
+                    dist.setProb(Rank.SCOUT, 1);
+                    normalize(dist, Rank.SCOUT);
+                    enemyArmy = getArmies();
+                    distributions = getDistributions(enemyArmy);
+                    reCalibrateBeliefState(Rank.FLAG, distributions, dist);
+                    reCalibrateBeliefState(Rank.BOMB, distributions, dist);
+                } catch (Exception ex) {
+                    Logger.getLogger(UTCPlayer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            } else {
+                try {
+                    dist.setProb(Rank.FLAG, 0);
+                    normalize(dist, Rank.FLAG);
+                    dist.setProb(Rank.BOMB, 0);
+                    normalize(dist, Rank.BOMB);
+                    enemyArmy = getArmies();
+                    distributions = getDistributions(enemyArmy);
+                    reCalibrateBeliefState(Rank.FLAG, distributions, dist);
+                    reCalibrateBeliefState(Rank.BOMB, distributions, dist);
+                } catch (Exception ex) {
+                    Logger.getLogger(UTCPlayer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            ArrayList<? extends Piece> blueArmy, redArmy;
+            if (color == color.BLUE) {
+                blueArmy = army;
+                redArmy = enemyArmy;
+            } else {
+                blueArmy = enemyArmy;
+                redArmy = army;
+            }
+            state = new GameState(state.getToMove(), blueArmy, redArmy);
+        }
         System.out.println("before Move: \n" + state);
         if (endSquare.isOccupied()) {
             tempCaptured = endSquare.getOccupier();
         }
+        //if()
         super.reportMove(move);
         System.out.println("After move: \n" + state);
-        
 
+    }
+
+    private boolean isScoutMove(Move move) {
+        int xdist = Math.abs(move.getDestinationColumn() - move.getStartColumn());
+        int ydist = Math.abs(move.getDestinationRow() - move.getStartRow());
+        return (xdist > 1 || ydist > 1);
     }
 
     @Override
@@ -273,12 +360,61 @@ public class UTCPlayer extends AIPlayer {
         if (!square.isOccupied()) {
             state = state.placePiece(row, column, null);
         } else {
-            Piece winner = square.getOccupier();
-            if(tempCaptured.getColor() == winner.getColor()) {
-                state = state.placePiece(row, column, tempCaptured);
-            }
+            FriendlyPiece winner = (FriendlyPiece) square.getOccupier();
+
+            if (tempCaptured.getColor() == winner.getColor()) {
+
+                if (winner.getColor() != color) {
+                    state = state.placePiece(row, column, tempCaptured);
+                    ProbabilityDistribution winnerDist;
+                    winnerDist = ((EnemyPiece) tempCaptured).getDistribution();
+                    revealRank(winnerDist, winner.getRank());
+                    ArrayList<EnemyPiece> enemyArmy = getArmies();
+                    ArrayList<? extends Piece> blueArmy;
+                    ArrayList<? extends Piece> redArmy;
+                    if (color == color.BLUE) {
+                        blueArmy = army;
+                        redArmy = enemyArmy;
+                    } else {
+                        blueArmy = enemyArmy;
+                        redArmy = army;
+                    }
+                    state = new GameState(state.getToMove(), blueArmy, redArmy);
+                } else {
+                    state = state.placePiece(row, column, tempCaptured);
+                }
+
+            } else if (winner.getColor() != color) {
+                ProbabilityDistribution winnerDist;
+                EnemyPiece ep;
+                ep = ((EnemyPiece) state.getSquare(row, column).getOccupier());
+                winnerDist = ep.getDistribution();
+                state = state.placePiece(row, column, ep);
+                revealRank(winnerDist, winner.getRank());
+                ArrayList<EnemyPiece> enemyArmy = getArmies();
+                ArrayList<? extends Piece> blueArmy;
+                ArrayList<? extends Piece> redArmy;
+                if (color == color.BLUE) {
+                        blueArmy = army;
+                        redArmy = enemyArmy;
+                    } else {
+                        blueArmy = enemyArmy;
+                        redArmy = army;
+                    }
+                    state = new GameState(state.getToMove(), blueArmy, redArmy);
+            }   
+
         }
+
         System.out.println(state);
+    }
+
+    private ArrayList<ProbabilityDistribution> getDistributions(ArrayList<EnemyPiece> enemyArmy) {
+        ArrayList<ProbabilityDistribution> distributions = new ArrayList<>();
+        for (EnemyPiece ep : enemyArmy) {
+            distributions.add(ep.getDistribution());
+        }
+        return distributions;
     }
 
     @Override
