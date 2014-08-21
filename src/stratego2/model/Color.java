@@ -7,5 +7,7 @@ package stratego2.model;
  * @author roussew
  */
 public enum Color {
-    BLUE, RED
+    BLUE, RED, 
+    
+    /**indicates dead squares**/GREY;
 }

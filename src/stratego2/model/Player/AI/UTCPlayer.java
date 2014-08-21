@@ -9,6 +9,7 @@ import stratego2.model.FriendlyPiece;
 import stratego2.model.GameState;
 import stratego2.model.Move;
 import stratego2.model.Piece;
+import stratego2.model.Player.AI.Simulator.UTCSimulator;
 import stratego2.model.Rank;
 import stratego2.model.Simulator;
 import stratego2.model.Square;
@@ -45,7 +46,7 @@ public class UTCPlayer extends AIPlayer {
         for (int i = 0; i < 5; i++) {
             root = new MCSTNode(getSampleState());
             root.expand();
-            for (int j = 0; j < 50; j++) {
+            for (int j = 0; j < 1000; j++) {
                 if (j > 20) {
                     System.out.println();
                 }
@@ -113,8 +114,15 @@ public class UTCPlayer extends AIPlayer {
             ProbabilityDistribution dist = p.getDistribution();
             Rank rank = determineRank(dist);
             revealRank(dist, rank);
+            boolean isRankKnown = false;
+            for(Rank r: Rank.values()) {
+                if ((Math.abs(1 - dist.getProb(r))) < EPSILON){            
+                    isRankKnown = true;
+                    break;
+                }
+            }
             convertedPieces.add(
-                    new FriendlyPiece(p.getColor(), p.getRow(), p.getColumn(), rank));
+                    new FriendlyPiece(p.getColor(), p.getRow(), p.getColumn(), rank, isRankKnown));
         }
         return convertedPieces;
     }
@@ -252,18 +260,16 @@ public class UTCPlayer extends AIPlayer {
     }
 
     private double defaultPolicy(MCSTNode node) {
-        Simulator simulator = new Simulator(node.getState(),
-                new DefaultPlayer(Color.RED, rules, node.getState()),
-                new DefaultPlayer(Color.BLUE, rules, node.getState()));
+        UTCSimulator simulator = new UTCSimulator(node.getState());
         try {
             Thread t = new Thread(simulator);
             t.start();
             t.join();
+            System.out.println(simulator.getDepth());
         } catch (InterruptedException ex) {
             Logger.getLogger(UTCPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println(simulator.getState());
-        return (simulator.getResult() == color) ? 1 : -1;
+        return simulator.getUtility();
     }
 
     private void backup(MCSTNode node, double result) {
@@ -363,7 +369,7 @@ public class UTCPlayer extends AIPlayer {
             FriendlyPiece winner = (FriendlyPiece) square.getOccupier();
 
             if (tempCaptured.getColor() == winner.getColor()) {
-
+                
                 if (winner.getColor() != color) {
                     state = state.placePiece(row, column, tempCaptured);
                     ProbabilityDistribution winnerDist;
@@ -381,6 +387,7 @@ public class UTCPlayer extends AIPlayer {
                     }
                     state = new GameState(state.getToMove(), blueArmy, redArmy);
                 } else {
+                    tempCaptured = ((FriendlyPiece)tempCaptured).makeKnown();
                     state = state.placePiece(row, column, tempCaptured);
                 }
 
@@ -403,7 +410,9 @@ public class UTCPlayer extends AIPlayer {
                     }
                     state = new GameState(state.getToMove(), blueArmy, redArmy);
             }   
-
+            if(winner.getColor() == color) {
+                state.placePiece(row, column, winner.makeKnown());
+            }
         }
 
         System.out.println(state);

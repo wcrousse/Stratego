@@ -30,6 +30,7 @@ public class Game {
      * modded by 2 following each move. Thus, should only equal 0 or 1.
      */
     private int toMove;
+    public int depth;
     /**
      * a data structure representing the current game layout
      */
@@ -72,7 +73,9 @@ public class Game {
     }
 
     protected Color play() throws Exception {
+        depth = 0;
         do {
+            depth++;
             for (Player p : players) {
                 p.displayBoard();//probably should change leave it for now
             }

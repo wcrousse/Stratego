@@ -16,7 +16,6 @@ public class Simulator extends Game implements Runnable{
     
     private final GameState startState;
     private Color winColor;
-
     
     public Simulator(GameState startState, Player bluePlayer, Player redPlayer) {
         super(startState, bluePlayer, redPlayer);

@@ -49,7 +49,7 @@ public class MCSTNode {
     
     public MCSTNode(GameState state, Move move){
         children = new ArrayList<>();
-        this.state = state;
+        this.state = state.makeMove(move);
         this.move = move;
     }
     
